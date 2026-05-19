@@ -326,3 +326,10 @@ export interface CategoryPreset {
     categories: string[];
     createdAt: number;
 }
+
+export interface SettingsPreset {
+    id: string;
+    name: string;
+    settings: GameState['settings'];
+    createdAt: number;
+}

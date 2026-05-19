@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { GameState, ThemeConfig, ThemeName } from '../../types';
-import { Users, X, Save, Check, Database, LayoutGrid, Settings, ChevronRight, ChevronDown, Lock, Droplets, ScanEye, Ghost, ShieldCheck, Network, Beer, Eye, Zap, UserMinus, Brain, Gavel, AlertTriangle, Gamepad2, Pencil, Pipette, Sparkles, Palette, Shield } from 'lucide-react';
+import { Users, X, Save, Check, Database, LayoutGrid, Settings, ChevronRight, ChevronDown, Lock, Droplets, ScanEye, Ghost, ShieldCheck, Network, Beer, Eye, Zap, UserMinus, Brain, Gavel, AlertTriangle, Gamepad2, Pencil, Pipette, Sparkles, Palette, Shield, ArrowUp, ArrowDown } from 'lucide-react';
 import { GameModeWithTabs, GameModeItem } from '../GameModeWithTabs';
 import { CategorySelector } from '../CategorySelector';
 import { SettingsDrawer } from '../SettingsDrawer';
@@ -417,6 +417,14 @@ export const SetupView: React.FC<Props> = ({
                                             <p className="text-[10px] font-bold text-red-400 flex-1">{validationError}</p>
                                         </div>
                                     )}
+                                    {playerCount >= MAX_PLAYERS && !validationError && (
+                                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3 animate-in slide-in-from-top-2 fade-in duration-200" style={{ backgroundColor: `${theme.accent}15`, border: `1px solid ${theme.accent}30` }}>
+                                            <Check size={12} style={{ color: theme.accent }} className="shrink-0" />
+                                            <p className="text-[10px] font-bold flex-1" style={{ color: theme.accent }}>
+                                                Sala completa ({playerCount}/{MAX_PLAYERS})
+                                            </p>
+                                        </div>
+                                    )}
                                     {showAutocomplete && autocompleteResults.length > 0 && (
                                         <div className="absolute top-full left-0 right-0 mt-2 rounded-2xl border overflow-hidden z-50 backdrop-blur-2xl animate-in slide-in-from-top-4 fade-in duration-300" style={{ backgroundColor: `${theme.cardBg}F8`, borderColor: theme.accent, boxShadow: `0 20px 60px -15px ${theme.accent}30, 0 0 0 1px ${theme.accent}10 inset` }}>
                                             <div className="px-4 py-2 border-b flex items-center gap-2" style={{ backgroundColor: `${theme.accent}10`, borderColor: `${theme.border}50` }}>
@@ -478,21 +486,46 @@ export const SetupView: React.FC<Props> = ({
                                             }}
                                         >
                                             <div className="absolute top-4 right-4 flex gap-1.5 z-10">
-                                                <button
-                                                    onClick={() => onCyclePlayerColor(p.id)}
-                                                    className="w-8 h-8 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors"
-                                                    style={{ color: theme.text }}
-                                                    title="Cambiar color"
-                                                >
-                                                    <Palette size={14} />
-                                                </button>
-                                                <button
-                                                    onClick={() => onRemovePlayer(p.id)}
-                                                    className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
-                                                    title="Eliminar"
-                                                >
-                                                    <X size={14} />
-                                                </button>
+                                                {isEditingPlayers ? (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleMovePlayer(idx, -1)}
+                                                            disabled={idx === 0}
+                                                            className="w-8 h-8 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                                            style={{ color: theme.text }}
+                                                            title="Mover arriba"
+                                                        >
+                                                            <ArrowUp size={14} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleMovePlayer(idx, 1)}
+                                                            disabled={idx === gameState.players.length - 1}
+                                                            className="w-8 h-8 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                                            style={{ color: theme.text }}
+                                                            title="Mover abajo"
+                                                        >
+                                                            <ArrowDown size={14} />
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            onClick={() => onCyclePlayerColor(p.id)}
+                                                            className="w-8 h-8 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors"
+                                                            style={{ color: theme.text }}
+                                                            title="Cambiar color"
+                                                        >
+                                                            <Palette size={14} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => onRemovePlayer(p.id)}
+                                                            className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
+                                                            title="Eliminar"
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                             
                                             <div className="flex items-center gap-4 mb-4">
@@ -757,7 +790,7 @@ export const SetupView: React.FC<Props> = ({
                         className="fixed left-0 w-full px-6 z-30 pointer-events-none transition-transform duration-500 ease-in-out"
                         style={{ 
                             bottom: 'calc(1.5rem + env(safe-area-inset-bottom))', 
-                            transform: isCompactUI ? 'translateY(0)' : 'translateY(-76px)' 
+                            transform: isCompactUI ? 'translateY(-50px)' : 'translateY(-76px)' 
                         }}
                     >
                         <div className="max-w-md mx-auto relative group">
@@ -790,10 +823,29 @@ export const SetupView: React.FC<Props> = ({
                                     </span>
                                     {isValidToStart && (
                                         <div
-                                            className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase backdrop-blur-xl shrink-0"
+                                            className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase backdrop-blur-xl shrink-0 flex items-center gap-1.5"
                                             style={{ backgroundColor: 'rgba(0,0,0,0.25)', color: 'white' }}
                                         >
-                                            {playerCount} Agentes
+                                            <span className="flex items-center gap-1">
+                                                <Users size={10} className="opacity-70" />
+                                                {playerCount}
+                                            </span>
+                                            
+                                            {modes.filter(m => m.isActive && !m.isDisabled).length > 0 && (
+                                                <>
+                                                    <span className="w-1 h-1 rounded-full bg-white/30" />
+                                                    <div className="flex items-center gap-0.5 opacity-80">
+                                                        {modes.filter(m => m.isActive && !m.isDisabled).slice(0, 3).map(m => (
+                                                            <div key={m.id} className="scale-75">
+                                                                {m.icon}
+                                                            </div>
+                                                        ))}
+                                                        {modes.filter(m => m.isActive && !m.isDisabled).length > 3 && (
+                                                            <span className="text-[7px] ml-0.5 opacity-70">+{modes.filter(m => m.isActive && !m.isDisabled).length - 3}</span>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -802,16 +854,16 @@ export const SetupView: React.FC<Props> = ({
                     </div>
                 )}
 
-                {/* iPhone style glassmorphic bottom Tab Bar (Adaptive) */}
+                {/* iPhone style glassmorphic bottom Tab Bar (Adaptive Apple Music style) */}
                 <div 
-                    className={`fixed bottom-0 left-0 w-full px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] z-40 transition-all duration-500 ease-in-out ${
-                        isCompactUI ? 'translate-y-[150%] opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'
-                    }`}
+                    className={`fixed bottom-0 left-0 w-full px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] z-40 transition-all duration-500 ease-in-out`}
+                    style={{ transform: isCompactUI ? 'translateY(10px)' : 'translateY(0)' }}
                 >
                     <div 
-                        className="max-w-md mx-auto h-16 rounded-full border flex items-center justify-around px-4 backdrop-blur-xl shadow-lg relative overflow-hidden"
+                        className="max-w-md mx-auto rounded-full border flex items-center justify-around px-4 backdrop-blur-xl shadow-lg relative overflow-hidden transition-all duration-500"
                         style={{
-                            backgroundColor: `${theme.cardBg}B0`,
+                            height: isCompactUI ? '48px' : '64px',
+                            backgroundColor: `${theme.cardBg}C0`,
                             borderColor: theme.border,
                             boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)'
                         }}
@@ -830,22 +882,29 @@ export const SetupView: React.FC<Props> = ({
                                         setActiveTab(tab.id as any);
                                         if (navigator.vibrate) navigator.vibrate(10);
                                     }}
-                                    className="flex flex-col items-center justify-center w-14 h-12 rounded-xl transition-all relative"
+                                    className="flex flex-col items-center justify-center w-14 h-full rounded-xl transition-all relative"
                                     style={{
                                         color: active ? theme.accent : theme.sub,
                                         opacity: active ? 1 : 0.6
                                     }}
                                 >
-                                    <div className={`transition-transform duration-300 ${active ? 'scale-110 -translate-y-0.5' : ''}`}>
+                                    <div className={`transition-all duration-500 ${active && !isCompactUI ? 'scale-110 -translate-y-0.5' : ''}`}>
                                         {tab.icon}
                                     </div>
-                                    <span className="text-[8px] font-black uppercase mt-1 tracking-wider whitespace-nowrap">
+                                    <span 
+                                        className="text-[8px] font-black uppercase mt-1 tracking-wider whitespace-nowrap transition-all duration-500"
+                                        style={{ 
+                                            opacity: isCompactUI ? 0 : 1, 
+                                            maxHeight: isCompactUI ? 0 : '20px',
+                                            transform: isCompactUI ? 'translateY(10px)' : 'translateY(0)'
+                                        }}
+                                    >
                                         {tab.label}
                                     </span>
                                     {active && (
                                         <div 
-                                            className="absolute bottom-0 w-4 h-1 rounded-full animate-in zoom-in duration-300"
-                                            style={{ backgroundColor: theme.accent }}
+                                            className="absolute bottom-1 w-4 h-1 rounded-full animate-in zoom-in duration-300"
+                                            style={{ backgroundColor: theme.accent, opacity: isCompactUI ? 0 : 1 }}
                                         />
                                     )}
                                 </button>

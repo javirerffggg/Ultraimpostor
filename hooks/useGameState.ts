@@ -6,7 +6,8 @@ import {
     CategoryData, 
     RenunciaDecision,
     SifonDecision,
-    PrismaDecision
+    PrismaDecision,
+    SettingsPreset
 } from '../types';
 import { DEFAULT_PLAYERS, CURATED_COLLECTIONS, GAME_LIMITS, PLAYER_COLORS } from '../constants';
 import { generateGameData } from '../utils/gameLogic';
@@ -247,6 +248,14 @@ export const useGameState = () => {
         }
     });
 
+    const [settingsPresets, setSettingsPresets] = useState<SettingsPreset[]>(() => {
+        try {
+            return JSON.parse(localStorage.getItem('impostor_settings_presets') || '[]');
+        } catch {
+            return [];
+        }
+    });
+
     const [gameState, setGameState] = useState<GameState>(INITIAL_STATE);
     const [architectOptions, setArchitectOptions] = useState<[ { categoryName: string, wordPair: CategoryData }, { categoryName: string, wordPair: CategoryData } ] | null>(null);
     const [architectRegenCount, setArchitectRegenCount] = useState(0);
@@ -255,6 +264,10 @@ export const useGameState = () => {
     useEffect(() => {
         localStorage.setItem('impostor_saved_players', JSON.stringify(savedPlayers));
     }, [savedPlayers]);
+
+    useEffect(() => {
+        localStorage.setItem('impostor_settings_presets', JSON.stringify(settingsPresets));
+    }, [settingsPresets]);
 
     useEffect(() => {
         safeLocalStorageSet(STORAGE_KEY_HISTORY, gameState.history);
@@ -333,6 +346,33 @@ export const useGameState = () => {
             ...prev,
             settings: { ...prev.settings, ...newSettings }
         }));
+    }, []);
+
+    const saveSettingsPreset = useCallback((name: string) => {
+        if (!name.trim()) return;
+        setSettingsPresets(prev => [
+            ...prev,
+            {
+                id: Date.now().toString(),
+                name: name.trim(),
+                settings: gameState.settings,
+                createdAt: Date.now()
+            }
+        ]);
+    }, [gameState.settings]);
+
+    const loadSettingsPreset = useCallback((presetId: string) => {
+        const preset = settingsPresets.find(p => p.id === presetId);
+        if (preset) {
+            setGameState(prev => ({
+                ...prev,
+                settings: { ...prev.settings, ...preset.settings }
+            }));
+        }
+    }, [settingsPresets]);
+
+    const deleteSettingsPreset = useCallback((presetId: string) => {
+        setSettingsPresets(prev => prev.filter(p => p.id !== presetId));
     }, []);
 
     const toggleCategory = useCallback((cat: string) => {
@@ -717,10 +757,14 @@ export const useGameState = () => {
         gameState,
         setGameState,
         savedPlayers,
+        settingsPresets,
         architectOptions,
         architectRegenCount,
         actions: {
             updateSettings,
+            saveSettingsPreset,
+            loadSettingsPreset,
+            deleteSettingsPreset,
             addPlayer,
             removePlayer,
             cyclePlayerColor,

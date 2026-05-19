@@ -65,7 +65,9 @@ const CHIPS: Array<{
     },
 ];
 
-export const PerformanceSection: React.FC<Props> = ({ gameState, theme, onUpdateSettings }) => {
+export const PerformanceSection: React.FC<Props & { searchQuery?: string }> = ({ gameState, theme, onUpdateSettings, searchQuery = '' }) => {
+    if (searchQuery && !'rendimiento performance bateria fps lag optimizacion'.includes(searchQuery.toLowerCase())) return null;
+
     const isPerfMode = gameState.settings.performanceMode ?? false;
 
     const handleToggle = () => {
@@ -84,7 +86,7 @@ export const PerformanceSection: React.FC<Props> = ({ gameState, theme, onUpdate
     };
 
     return (
-        <SectionContainer>
+        <SectionContainer className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
             <SectionHeader
                 icon={<Gauge size={16} />}
                 title="Rendimiento"

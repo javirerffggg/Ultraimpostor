@@ -11,14 +11,21 @@ interface Props {
     theme: ThemeConfig;
 }
 
-export const VisualEngineSection: React.FC<Props> = ({ themeName, setThemeName, theme }) => {
+export const VisualEngineSection: React.FC<{
+    themeName: ThemeName;
+    setThemeName: (name: ThemeName) => void;
+    theme: ThemeConfig;
+    searchQuery?: string;
+}> = ({ themeName, setThemeName, theme, searchQuery = '' }) => {
+    if (searchQuery && !'visual tema motor grafico colores estetica'.includes(searchQuery.toLowerCase())) return null;
+
     const [activeTab, setActiveTab] = useState<ThemeCategory>(() => getThemeCategory(themeName));
 
     const totalThemes = useMemo(() => Object.keys(THEMES).length, []);
     const isPremium = PREMIUM_THEMES.includes(themeName);
 
     return (
-        <SectionContainer>
+        <SectionContainer className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
             <SectionHeader
                 icon={<Monitor size={16} />}
                 title="Motor Visual"

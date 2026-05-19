@@ -2,7 +2,7 @@
  * Shared primitive components for SettingsDrawer.
  * SectionContainer, SectionHeader, ContentCard, SettingRow, PremiumToggle, AudioWaveform
  */
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { ThemeConfig } from '../../types';
 import { Volume2, VolumeX } from 'lucide-react';
 
@@ -85,10 +85,11 @@ export const SettingRow: React.FC<{
     iconColor?: string;
     title: string;
     subtitle?: string;
+    badge?: React.ReactNode;
     action: React.ReactNode;
     theme: ThemeConfig;
     noBorder?: boolean;
-}> = ({ icon, iconColor, title, subtitle, action, theme, noBorder = false }) => (
+}> = ({ icon, iconColor, title, subtitle, badge, action, theme, noBorder = false }) => (
     <div
         className={`flex items-center justify-between gap-4 py-3 ${!noBorder ? 'border-b' : ''} last:border-0`}
         style={{ borderColor: `${theme.border}30` }}
@@ -103,7 +104,10 @@ export const SettingRow: React.FC<{
                 </div>
             )}
             <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-sm font-bold truncate" style={{ color: theme.text }}>{title}</span>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold truncate" style={{ color: theme.text }}>{title}</span>
+                    {badge}
+                </div>
                 {subtitle && (
                     <span className="text-[10px] font-medium opacity-60 truncate" style={{ color: theme.sub }}>
                         {subtitle}
@@ -116,34 +120,91 @@ export const SettingRow: React.FC<{
 );
 
 // ---------------------------------------------------------------------------
-// PremiumToggle
+// PremiumToggle (with Confirmation)
 // ---------------------------------------------------------------------------
 export const PremiumToggle: React.FC<{
     active: boolean;
     onClick: () => void;
     theme: ThemeConfig;
-}> = ({ active, onClick, theme }) => (
-    <button
-        onClick={onClick}
-        className="relative w-12 h-7 rounded-full transition-all duration-300 shadow-inner focus:outline-none group"
-        style={{
-            backgroundColor: active ? theme.accent : 'rgba(255,255,255,0.1)',
-            boxShadow: active
-                ? `inset 0 2px 4px rgba(0,0,0,0.3), 0 0 10px ${theme.accent}40`
-                : 'inset 0 2px 4px rgba(0,0,0,0.3)'
-        }}
-    >
-        <div
-            className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-[0_2px_4px_rgba(0,0,0,0.2)] group-active:scale-90 flex items-center justify-center ${
-                active ? 'left-6' : 'left-1'
-            }`}
-        >
-            {active && (
-                <div className="w-1.5 h-1.5 rounded-full bg-current opacity-20" style={{ color: theme.accent }} />
+    requiresConfirmation?: boolean;
+}> = ({ active, onClick, theme, requiresConfirmation = false }) => {
+    const [confirming, setConfirming] = useState(false);
+
+    useEffect(() => {
+        let t: number;
+        if (confirming) {
+            t = window.setTimeout(() => setConfirming(false), 3000);
+        }
+        return () => clearTimeout(t);
+    }, [confirming]);
+
+    const handleClick = () => {
+        if (requiresConfirmation && !confirming) {
+            if (navigator.vibrate) navigator.vibrate(20);
+            setConfirming(true);
+        } else {
+            setConfirming(false);
+            onClick();
+        }
+    };
+
+    return (
+        <div className="flex items-center gap-2">
+            {confirming && (
+                <span className="text-[9px] font-black uppercase animate-pulse" style={{ color: '#ef4444' }}>
+                    ¿Confirmar?
+                </span>
             )}
+            <button
+                onClick={handleClick}
+                className={`relative w-12 h-7 rounded-full transition-all duration-300 shadow-inner focus:outline-none group ${confirming ? 'ring-2 ring-red-500/50' : ''}`}
+                style={{
+                    backgroundColor: active ? theme.accent : 'rgba(255,255,255,0.1)',
+                    boxShadow: active
+                        ? `inset 0 2px 4px rgba(0,0,0,0.3), 0 0 10px ${theme.accent}40`
+                        : 'inset 0 2px 4px rgba(0,0,0,0.3)'
+                }}
+            >
+                <div
+                    className={`absolute top-1 w-5 h-5 rounded-full transition-all duration-300 shadow-[0_2px_4px_rgba(0,0,0,0.2)] group-active:scale-90 flex items-center justify-center ${
+                        active ? 'left-6' : 'left-1'
+                    }`}
+                    style={{ backgroundColor: confirming ? '#ef4444' : 'white' }}
+                >
+                    {active && !confirming && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-current opacity-20" style={{ color: theme.accent }} />
+                    )}
+                </div>
+            </button>
         </div>
-    </button>
-);
+    );
+};
+
+export const ConfirmToggle: React.FC<{
+    active: boolean;
+    onClick: () => void;
+    theme: ThemeConfig;
+}> = (props) => <PremiumToggle {...props} requiresConfirmation={true} />;
+
+// ---------------------------------------------------------------------------
+// DifficultyBadge
+// ---------------------------------------------------------------------------
+export const DifficultyBadge: React.FC<{
+    label: string;
+    icon?: React.ReactNode;
+    level?: 'info' | 'warning' | 'danger';
+}> = ({ label, icon, level = 'info' }) => {
+    let colors = 'bg-blue-500/10 text-blue-400 border-blue-500/30';
+    if (level === 'warning') colors = 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+    if (level === 'danger') colors = 'bg-red-500/10 text-red-400 border-red-500/30';
+
+    return (
+        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[9px] font-black uppercase tracking-wider ${colors}`}>
+            {icon && <span className="opacity-80">{icon}</span>}
+            {label}
+        </span>
+    );
+};
 
 // ---------------------------------------------------------------------------
 // AudioWaveform  — fixed: supports touch events for mobile
@@ -223,6 +284,40 @@ export const SegmentedControl = <T extends string>({
                 }}
             >
                 {labels[opt] ?? opt}
+            </button>
+        ))}
+    </div>
+);
+
+// ---------------------------------------------------------------------------
+// IconSegmentedControl
+// ---------------------------------------------------------------------------
+export const IconSegmentedControl = <T extends string>({
+    options, value, onChange, icons, theme
+}: {
+    options: readonly T[];
+    value: T;
+    onChange: (v: T) => void;
+    icons: Record<string, React.ReactNode>;
+    theme: ThemeConfig;
+}) => (
+    <div
+        className="flex gap-1 p-1 rounded-xl border"
+        style={{ backgroundColor: `${theme.bg}40`, borderColor: `${theme.border}40` }}
+    >
+        {options.map(opt => (
+            <button
+                key={opt}
+                onClick={() => onChange(opt)}
+                className="flex-1 py-2 flex items-center justify-center rounded-lg transition-all duration-200"
+                style={{
+                    backgroundColor: value === opt ? `${theme.accent}25` : 'transparent',
+                    color: value === opt ? theme.accent : theme.sub,
+                    boxShadow: value === opt ? `0 4px 12px -4px ${theme.accent}40` : 'none'
+                }}
+                aria-label={opt}
+            >
+                {icons[opt]}
             </button>
         ))}
     </div>

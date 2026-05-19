@@ -235,6 +235,7 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
     const [decryptProgress, setDecryptProgress] = useState(0);
     const [isHoldingDecrypt, setIsHoldingDecrypt] = useState(false);
     const [timerSeconds, setTimerSeconds] = useState(0);
+    const frozenTimerRef = useRef(0);
     const [showMenuConfirm, setShowMenuConfirm] = useState(false);
     const confirmTimeoutRef = useRef<number | null>(null);
     const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
@@ -243,7 +244,10 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
     useEffect(() => {
         if (isDecrypted) return;
         const interval = setInterval(() => {
-            setTimerSeconds(s => s + 1);
+            setTimerSeconds(s => {
+                frozenTimerRef.current = s + 1;
+                return s + 1;
+            });
         }, 1000);
         return () => clearInterval(interval);
     }, [isDecrypted]);
@@ -476,7 +480,8 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
 
     // --- RENDER: RESULTS ---
     return (
-        <div className="flex flex-col h-full items-center p-6 pb-24 animate-in slide-in-from-bottom duration-700 relative z-10 pt-[calc(1.5rem+env(safe-area-inset-top))] overflow-y-auto">
+        <div className="h-full overflow-y-auto">
+        <div className="flex flex-col min-h-full w-full items-center p-6 pb-24 animate-in slide-in-from-bottom duration-700 relative z-10 pt-[calc(1.5rem+env(safe-area-inset-top))]">
 
             {/* 1. HERO SECTION: THE WORD */}
             <div className="w-full max-w-sm mb-10 mt-4 text-center relative group">
@@ -509,12 +514,11 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
 
             {/* RESUMEN DE LA MISIÓN */}
             <div 
-                className="w-full max-w-sm p-5 border backdrop-blur-2xl relative overflow-hidden mb-6"
+                className="w-full max-w-sm p-5 border rounded-3xl mb-6"
                 style={{ 
-                    backgroundColor: `${theme.cardBg}80`, 
-                    borderColor: theme.border, 
-                    borderRadius: '24px', 
-                    boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' 
+                    backgroundColor: `${theme.cardBg}F0`, 
+                    borderColor: theme.border,
+                    boxShadow: '0 4px 24px -8px rgba(0,0,0,0.2)'
                 }}
             >
                 <div className="flex items-center gap-2 mb-4">
@@ -523,22 +527,27 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                    {lastLog.category && (
-                        <div className="bg-black/20 rounded-xl p-3 border border-white/5">
-                            <span className="text-[8px] font-mono uppercase opacity-55 block mb-0.5" style={{ color: theme.sub }}>Categoría</span>
-                            <span className="text-xs font-black truncate block" style={{ color: theme.text }}>{lastLog.category}</span>
-                        </div>
-                    )}
-                    <div className="bg-black/20 rounded-xl p-3 border border-white/5">
-                        <span className="text-[8px] font-mono uppercase opacity-55 block mb-0.5" style={{ color: theme.sub }}>Tiempo de debate</span>
-                        <span className="text-xs font-black block" style={{ color: theme.text }}>{formatTime(timerSeconds)}</span>
+                    <div className="rounded-xl p-3 border" style={{ backgroundColor: 'rgba(255,255,255,0.03)', borderColor: `${theme.border}40` }}>
+                        <span className="text-[8px] font-mono uppercase opacity-60 block mb-1 tracking-wider" style={{ color: theme.sub }}>Categoría</span>
+                        <span className="text-xs font-black truncate block" style={{ color: theme.text }}>
+                            {lastLog.category || 'Aleatoria'}
+                        </span>
                     </div>
-                    {gameState.startingPlayer && (
-                        <div className="bg-black/20 rounded-xl p-3 border border-white/5 col-span-2">
-                            <span className="text-[8px] font-mono uppercase opacity-55 block mb-0.5" style={{ color: theme.sub }}>Iniciador de debate</span>
-                            <span className="text-xs font-black block" style={{ color: theme.text }}>🗣️ {gameState.startingPlayer} habla primero</span>
+                    <div className="rounded-xl p-3 border" style={{ backgroundColor: 'rgba(255,255,255,0.03)', borderColor: `${theme.border}40` }}>
+                        <span className="text-[8px] font-mono uppercase opacity-60 block mb-1 tracking-wider" style={{ color: theme.sub }}>Tiempo de debate</span>
+                        <span className="text-xs font-black block" style={{ color: theme.text }}>
+                            {formatTime(frozenTimerRef.current || timerSeconds)}
+                        </span>
+                    </div>
+                    <div className="rounded-xl p-3 border col-span-2 flex items-center justify-between" style={{ backgroundColor: 'rgba(255,255,255,0.03)', borderColor: `${theme.border}40` }}>
+                        <div>
+                            <span className="text-[8px] font-mono uppercase opacity-60 block mb-1 tracking-wider" style={{ color: theme.sub }}>Iniciador de debate</span>
+                            <span className="text-xs font-black block" style={{ color: theme.text }}>
+                                {gameState.startingPlayer ? gameState.startingPlayer : 'Nadie'}
+                            </span>
                         </div>
-                    )}
+                        <span className="text-lg opacity-80">🗣️</span>
+                    </div>
                 </div>
 
                 {activeProtocols.length > 0 && (
@@ -840,6 +849,7 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
                     {showMenuConfirm ? '¿Salir? (confirmar)' : 'Menú principal'}
                 </button>
             </div>
+        </div>
         </div>
     );
 };

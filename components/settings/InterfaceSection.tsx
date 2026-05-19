@@ -11,9 +11,11 @@ interface Props {
     onUpdateSettings: (s: Partial<GameState['settings']>) => void;
 }
 
-export const InterfaceSection: React.FC<Props> = ({ gameState, theme, onUpdateSettings }) => {
+export const InterfaceSection: React.FC<Props & { searchQuery?: string }> = ({ gameState, theme, onUpdateSettings, searchQuery = '' }) => {
+    if (searchQuery && !'interfaz diseño pestañas tabs navegacion layout'.includes(searchQuery.toLowerCase())) return null;
+
     return (
-        <SectionContainer>
+        <SectionContainer className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
             <SectionHeader
                 icon={<Smartphone size={16} />}
                 title="Diseño e Interfaz"

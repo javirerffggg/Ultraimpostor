@@ -28,7 +28,7 @@ const KONAMI_CODE = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','Ar
 
 function App() {
     const { 
-        gameState, setGameState, savedPlayers, architectOptions, architectRegenCount,
+        gameState, setGameState, savedPlayers, settingsPresets, architectOptions, architectRegenCount,
         actions 
     } = useGameState();
 
@@ -409,6 +409,10 @@ function App() {
                     onBackToHome={() => { setSettingsOpen(false); handleBackToSetup(); }}
                     volume={volume}
                     setVolume={setVolume}
+                    settingsPresets={settingsPresets}
+                    onSaveSettingsPreset={actions.saveSettingsPreset}
+                    onLoadSettingsPreset={actions.loadSettingsPreset}
+                    onDeleteSettingsPreset={actions.deleteSettingsPreset}
                 />
 
                 <CategorySelector

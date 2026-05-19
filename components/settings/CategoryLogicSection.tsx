@@ -3,7 +3,7 @@ import { Filter, Star, Repeat, Compass } from 'lucide-react';
 import { ThemeConfig, GameState } from '../../types';
 import {
     SectionContainer, SectionHeader, ContentCard,
-    SettingRow, PremiumToggle, SegmentedControl
+    SettingRow, PremiumToggle, SegmentedControl, DifficultyBadge, ConfirmToggle
 } from './SettingsComponents';
 import { REPETITION_LABELS } from './settingsUtils';
 
@@ -13,8 +13,11 @@ interface Props {
     onUpdateSettings: (s: Partial<GameState['settings']>) => void;
 }
 
-export const CategoryLogicSection: React.FC<Props> = ({ gameState, theme, onUpdateSettings }) => (
-    <SectionContainer>
+export const CategoryLogicSection: React.FC<Props & { searchQuery?: string }> = ({ gameState, theme, onUpdateSettings, searchQuery = '' }) => {
+    if (searchQuery && !'categorias logica repeticion rotacion explorador mazo rareza'.includes(searchQuery.toLowerCase())) return null;
+
+    return (
+        <SectionContainer className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
         <SectionHeader
             icon={<Filter size={16} />}
             title="Lógica de Categorías"
@@ -50,6 +53,7 @@ export const CategoryLogicSection: React.FC<Props> = ({ gameState, theme, onUpda
                     iconColor="#eab308"
                     title="Boost de Rareza"
                     subtitle="Priorizar categorías poco usadas"
+                    badge={<DifficultyBadge label="Normal" level="info" />}
                     action={
                         <PremiumToggle
                             active={gameState.settings.rareCategoryBoost}
@@ -63,8 +67,9 @@ export const CategoryLogicSection: React.FC<Props> = ({ gameState, theme, onUpda
                     icon={<Repeat size={14} />}
                     title="Modo Rotación"
                     subtitle="Ciclo secuencial estricto"
+                    badge={<DifficultyBadge label="Difícil" level="warning" />}
                     action={
-                        <PremiumToggle
+                        <ConfirmToggle
                             active={!!gameState.settings.rotationMode}
                             onClick={() => onUpdateSettings({ rotationMode: !gameState.settings.rotationMode })}
                             theme={theme}
@@ -77,8 +82,9 @@ export const CategoryLogicSection: React.FC<Props> = ({ gameState, theme, onUpda
                     iconColor="#10b981"
                     title="Modo Explorador"
                     subtitle="Sin repetir hasta agotar el mazo"
+                    badge={<DifficultyBadge label="Extremo" level="danger" />}
                     action={
-                        <PremiumToggle
+                        <ConfirmToggle
                             active={!!gameState.settings.explorerMode}
                             onClick={() => onUpdateSettings({ explorerMode: !gameState.settings.explorerMode })}
                             theme={theme}
@@ -90,4 +96,5 @@ export const CategoryLogicSection: React.FC<Props> = ({ gameState, theme, onUpda
             </div>
         </ContentCard>
     </SectionContainer>
-);
+    );
+};

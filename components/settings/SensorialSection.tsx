@@ -14,10 +14,13 @@ interface Props {
     onUpdateSettings: (s: Partial<GameState['settings']>) => void;
 }
 
-export const SensorialSection: React.FC<Props> = ({
-    gameState, theme, volume, setVolume, onUpdateSettings
-}) => (
-    <SectionContainer>
+export const SensorialSection: React.FC<Props & { searchQuery?: string }> = ({
+    gameState, theme, volume, setVolume, onUpdateSettings, searchQuery = ''
+}) => {
+    if (searchQuery && !'sensorial audio volumen sonido efectos pases barajar animacion haptico'.includes(searchQuery.toLowerCase())) return null;
+
+    return (
+        <SectionContainer className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
         <SectionHeader
             icon={<Cpu size={16} />}
             title="Experiencia Sensorial"
@@ -111,4 +114,5 @@ export const SensorialSection: React.FC<Props> = ({
             </div>
         </ContentCard>
     </SectionContainer>
-);
+    );
+};

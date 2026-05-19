@@ -13,7 +13,9 @@ interface Props {
 
 const DIFFICULTY_OPTIONS = ['easy', 'normal', 'hard', 'extreme'] as const;
 
-export const MemorySection: React.FC<Props> = ({ gameState, theme, onUpdateSettings }) => {
+export const MemorySection: React.FC<Props & { searchQuery?: string }> = ({ gameState, theme, onUpdateSettings, searchQuery = '' }) => {
+    if (searchQuery && !'memoria dificultad recordar'.includes(searchQuery.toLowerCase())) return null;
+
     const { memoryModeConfig } = gameState.settings;
 
     const handleDifficultyChange = (difficulty: MemoryDifficulty) => {
@@ -26,7 +28,7 @@ export const MemorySection: React.FC<Props> = ({ gameState, theme, onUpdateSetti
     if (!memoryModeConfig.enabled) return null;
 
     return (
-        <SectionContainer>
+        <SectionContainer className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
             <SectionHeader
                 icon={<Brain size={16} />}
                 title="Configuración de Memoria"
