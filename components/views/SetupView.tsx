@@ -61,6 +61,41 @@ export const SetupView: React.FC<Props> = ({
     const [showSaveInBank, setShowSaveInBank] = useState(false);
     const [activeTab, setActiveTab] = useState<'players' | 'protocols' | 'categories' | 'settings'>('players');
 
+    // Mejora UI Adaptativa: Apple Music-like scroll hide/show
+    const [isCompactUI, setIsCompactUI] = useState(false);
+
+    useEffect(() => {
+        if (!gameState.settings.useTabbedLayout) return;
+        
+        const scrollContainer = document.getElementById('main-scroll-container');
+        if (!scrollContainer) return;
+
+        let lastScrollY = scrollContainer.scrollTop;
+        let ticking = false;
+
+        const handleScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const currentScrollY = scrollContainer.scrollTop;
+                    const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+                    
+                    if (currentScrollY > lastScrollY && currentScrollY > 60 && currentScrollY < maxScroll - 20) {
+                        setIsCompactUI(true);
+                    } else if (currentScrollY < lastScrollY - 10 || currentScrollY <= 60 || currentScrollY >= maxScroll - 20) {
+                        setIsCompactUI(false);
+                    }
+                    
+                    lastScrollY = currentScrollY;
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+
+        scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+        return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }, [gameState.settings.useTabbedLayout]);
+
     const autocompleteTimeoutRef = useRef<number | null>(null);
 
     const [tapCount, setTapCount] = useState(0);
@@ -257,7 +292,7 @@ export const SetupView: React.FC<Props> = ({
                     <div className="fixed inset-0 pointer-events-none z-[60] border-4 border-amber-500/50 animate-pulse" />
                 )}
 
-                <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-48 no-scrollbar">
+                <div id="main-scroll-container" className="flex-1 overflow-y-auto overflow-x-hidden px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-48 no-scrollbar">
                     {activeTab === 'players' && (
                         <div className="space-y-6 pt-4 px-1 animate-in fade-in duration-300">
                             {/* Header */}
@@ -718,7 +753,13 @@ export const SetupView: React.FC<Props> = ({
 
                 {/* Floating start button */}
                 {(activeTab === 'players' || activeTab === 'protocols') && (
-                    <div className="fixed bottom-[84px] left-0 w-full px-6 z-30 pointer-events-none">
+                    <div 
+                        className="fixed left-0 w-full px-6 z-30 pointer-events-none transition-transform duration-500 ease-in-out"
+                        style={{ 
+                            bottom: 'calc(1.5rem + env(safe-area-inset-bottom))', 
+                            transform: isCompactUI ? 'translateY(0)' : 'translateY(-76px)' 
+                        }}
+                    >
                         <div className="max-w-md mx-auto relative group">
                             {isValidToStart && (
                                 <div
@@ -761,8 +802,12 @@ export const SetupView: React.FC<Props> = ({
                     </div>
                 )}
 
-                {/* iPhone style glassmorphic bottom Tab Bar */}
-                <div className="fixed bottom-0 left-0 w-full px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] z-40">
+                {/* iPhone style glassmorphic bottom Tab Bar (Adaptive) */}
+                <div 
+                    className={`fixed bottom-0 left-0 w-full px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] z-40 transition-all duration-500 ease-in-out ${
+                        isCompactUI ? 'translate-y-[150%] opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'
+                    }`}
+                >
                     <div 
                         className="max-w-md mx-auto h-16 rounded-full border flex items-center justify-around px-4 backdrop-blur-xl shadow-lg relative overflow-hidden"
                         style={{
