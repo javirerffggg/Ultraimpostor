@@ -1,6 +1,23 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import crypto from 'node:crypto';
+
+// Polyfill global crypto for Node environments where it is not globally exposed
+if (typeof globalThis.crypto === 'undefined') {
+  Object.defineProperty(globalThis, 'crypto', {
+    value: crypto.webcrypto,
+    writable: true,
+    configurable: true,
+  });
+}
+if (typeof global.crypto === 'undefined') {
+  Object.defineProperty(global, 'crypto', {
+    value: crypto.webcrypto,
+    writable: true,
+    configurable: true,
+  });
+}
 
 export default defineConfig({
   plugins: [
