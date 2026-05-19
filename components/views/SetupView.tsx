@@ -7,7 +7,9 @@ import { SettingsDrawer } from '../SettingsDrawer';
 import { getMemoryConfigForDifficulty } from '../../utils/memoryWordGenerator';
 import { getPlayerColor, getPlayerInitials } from '../../utils/playerHelpers';
 import { getVault } from '../../utils/core/vault';
+import { getProgression, loadAllProgressions } from '../../utils/progression/storage';
 import { GAME_LIMITS } from '../../constants';
+import { ProgressionBadge } from '../progression/ProgressionBadge';
 // @ts-ignore
 import confetti from 'canvas-confetti';
 import { PlayerBank } from '../PlayerBank';
@@ -542,9 +544,16 @@ export const SetupView: React.FC<Props> = ({
                                                     <h4 className="text-base font-black tracking-wide truncate" style={{ color: theme.text }}>
                                                         {p.name}
                                                     </h4>
-                                                    <p className="text-[10px] font-mono opacity-60" style={{ color: theme.sub }}>
-                                                        Orden: {idx + 1}º
-                                                    </p>
+                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                        <p className="text-[10px] font-mono opacity-60" style={{ color: theme.sub }}>
+                                                            Orden: {idx + 1}º
+                                                        </p>
+                                                        <ProgressionBadge
+                                                            progression={getProgression(p.name.trim().toLowerCase())}
+                                                            theme={theme}
+                                                            compact
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                             

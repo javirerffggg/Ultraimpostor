@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GameState, ThemeConfig, RenunciaDecision } from '../../types';
+import { GameState, ThemeConfig, RenunciaDecision, PlayerProgression } from '../../types';
 import { Fingerprint, Unlock, Lock, Eye, AlertTriangle, Ghost, Clock, Beer, RotateCcw, Crown, Zap, Network, Menu, BatteryWarning, X, ChevronLeft, Smartphone, ArrowRight, Flame, Shield, Activity, FileText, Sparkles, Gamepad2, Compass } from 'lucide-react';
 import { PLAYER_COLORS } from '../../constants';
 import { RenunciaDecisionView } from '../RenunciaDecisionView';
@@ -8,6 +8,8 @@ import { SwipeRevealCard } from '../SwipeRevealCard';
 import { MemoryRevealCard } from '../MemoryRevealCard';
 import { IdentityCard } from '../IdentityCard';
 import { getVault } from '../../utils/core/vault';
+import { ProgressionBadge } from '../progression/ProgressionBadge';
+import { PlayerProfileView } from '../progression/PlayerProfileView';
 
 interface Props {
     gameState: GameState;
@@ -21,6 +23,7 @@ interface Props {
     onRenunciaRoleSeen: () => void;
     isExiting: boolean;
     transitionName?: string | null;
+    getPlayerProgression?: (name: string) => PlayerProgression;
 }
 
 // --- SUB-COMPONENT: DIGIT FLIP TIMER ---
@@ -193,7 +196,7 @@ const ReRevealModal: React.FC<{
     );
 };
 
-export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onReplay, currentPlayerColor, onNextPlayer, onOracleConfirm, onRenunciaDecision, onRenunciaRoleSeen, isExiting, transitionName }) => {
+export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onReplay, currentPlayerColor, onNextPlayer, onOracleConfirm, onRenunciaDecision, onRenunciaRoleSeen, isExiting, transitionName, getPlayerProgression }) => {
     const impostors = gameState.gameData.filter(p => p.isImp);
     const civilWord = gameState.gameData.find(p => !p.isImp)?.realWord || "???";
     const isTroll = gameState.isTrollEvent;
@@ -240,6 +243,7 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
     const confirmTimeoutRef = useRef<number | null>(null);
     const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
     const [showReReveal, setShowReReveal] = useState(false);
+    const [profileViewPlayer, setProfileViewPlayer] = useState<string | null>(null);
 
     useEffect(() => {
         if (isDecrypted) return;
@@ -480,8 +484,9 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
 
     // --- RENDER: RESULTS ---
     return (
-        <div className="h-full overflow-y-auto">
-        <div className="flex flex-col min-h-full w-full items-center p-6 pb-24 animate-in slide-in-from-bottom duration-700 relative z-10 pt-[calc(1.5rem+env(safe-area-inset-top))]">
+        <div className="h-full flex flex-col">
+        <div className="flex-1 overflow-y-auto">
+        <div className="flex flex-col min-h-full w-full items-center p-6 pb-6 animate-in slide-in-from-bottom duration-700 relative z-10 pt-[calc(1.5rem+env(safe-area-inset-top))]">
 
             {/* 1. HERO SECTION: THE WORD */}
             <div className="w-full max-w-sm mb-10 mt-4 text-center relative group">
@@ -709,10 +714,21 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
                                     style={{ borderColor: `${theme.border}50` }}
                                 >
                                     <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                                    <span className="text-sm font-bold flex-1 text-left" style={{ color: isImp ? theme.accent : theme.text }}>
-                                        {player.name}
-                                        {isImp && <span className="ml-2 text-[9px] font-black opacity-70">(IMP)</span>}
-                                    </span>
+                                    <div className="flex-1 text-left min-w-0">
+                                        <span className="text-sm font-bold" style={{ color: isImp ? theme.accent : theme.text }}>
+                                            {player.name}
+                                            {isImp && <span className="ml-2 text-[9px] font-black opacity-70">(IMP)</span>}
+                                        </span>
+                                        {getPlayerProgression && (
+                                            <div className="mt-0.5">
+                                                <ProgressionBadge
+                                                    progression={getPlayerProgression(player.name)}
+                                                    theme={theme}
+                                                    compact
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
                                     <span className="text-[10px] font-mono tabular-nums" style={{ color: suspicion.color }}>
                                         {player.viewTime ? `${player.viewTime.toFixed(1)}s` : '-'}
                                     </span>
@@ -811,7 +827,23 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
                                                 </div>
                                             </div>
                                         )}
+
+                                        {/* View Profile Button */}
+                                        {getPlayerProgression && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setProfileViewPlayer(player.name); }}
+                                                className="w-full mt-2 py-2 rounded-xl flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-wider border transition-all active:scale-[0.98]"
+                                                style={{
+                                                    backgroundColor: `${theme.accent}10`,
+                                                    borderColor: `${theme.accent}30`,
+                                                    color: theme.accent
+                                                }}
+                                            >
+                                                Ver Perfil & Progresión
+                                            </button>
+                                        )}
                                     </div>
+                                    
                                 )}
                             </div>
                         );
@@ -819,36 +851,53 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
                 </div>
             </div>
 
-            {/* 4. ACTION BUTTONS */}
-            <div className="w-full max-w-sm space-y-3 mb-4">
-                <button
-                    onClick={onReplay}
-                    className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98] border"
-                    style={{
-                        backgroundColor: `${theme.accent}20`,
-                        borderColor: `${theme.accent}50`,
-                        color: theme.accent,
-                        boxShadow: `0 8px 24px -8px ${theme.accent}30`
-                    }}
-                >
-                    <RotateCcw size={18} />
-                    Nueva partida
-                </button>
+            {/* PLAYER PROFILE OVERLAY */}
+            {profileViewPlayer && getPlayerProgression && (
+                <PlayerProfileView
+                    playerName={profileViewPlayer}
+                    progression={getPlayerProgression(profileViewPlayer)}
+                    theme={theme}
+                    onClose={() => setProfileViewPlayer(null)}
+                />
+            )}
 
-                <button
-                    onClick={handleMenuClick}
-                    onPointerDown={handleMenuClick}
-                    className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98] border"
-                    style={{
-                        backgroundColor: showMenuConfirm ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)',
-                        borderColor: showMenuConfirm ? 'rgba(239,68,68,0.5)' : theme.border,
-                        color: showMenuConfirm ? '#f87171' : theme.sub
-                    }}
-                >
-                    <Menu size={18} />
-                    {showMenuConfirm ? '¿Salir? (confirmar)' : 'Menú principal'}
-                </button>
-            </div>
+        </div>
+        </div>
+
+        {/* FIXED BOTTOM NAV BAR */}
+        <div
+            className="shrink-0 flex items-center gap-2 px-3 py-2 border-t backdrop-blur-xl"
+            style={{
+                backgroundColor: `${theme.cardBg}E8`,
+                borderColor: `${theme.border}60`,
+                paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))'
+            }}
+        >
+            <button
+                onClick={onReplay}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all active:scale-[0.97] border"
+                style={{
+                    backgroundColor: `${theme.accent}18`,
+                    borderColor: `${theme.accent}40`,
+                    color: theme.accent
+                }}
+            >
+                <RotateCcw size={15} />
+                Nueva partida
+            </button>
+
+            <button
+                onClick={handleMenuClick}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all active:scale-[0.97] border"
+                style={{
+                    backgroundColor: showMenuConfirm ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)',
+                    borderColor: showMenuConfirm ? 'rgba(239,68,68,0.5)' : `${theme.border}80`,
+                    color: showMenuConfirm ? '#f87171' : theme.sub
+                }}
+            >
+                <Menu size={15} />
+                {showMenuConfirm ? 'Confirmar' : 'Menú'}
+            </button>
         </div>
         </div>
     );

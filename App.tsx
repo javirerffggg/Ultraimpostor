@@ -4,6 +4,7 @@ import { ThemeName } from './types';
 import { useGameState } from './hooks/useGameState';
 import { useAudioSystem } from './hooks/useAudioSystem';
 import { usePartyPrompts } from './hooks/usePartyPrompts';
+import { useProgression } from './hooks/useProgression';
 import confetti from 'canvas-confetti';
 import { LoadingSpinner } from './components/LoadingSpinner';
 
@@ -20,6 +21,7 @@ const SetupView = lazy(() => import('./components/views/SetupView').then(m => ({
 const RevealingView = lazy(() => import('./components/views/RevealingView').then(m => ({ default: m.RevealingView })));
 const ResultsView = lazy(() => import('./components/views/ResultsView').then(m => ({ default: m.ResultsView })));
 const OracleSelectionView = lazy(() => import('./components/views/OracleSelectionView').then(m => ({ default: m.OracleSelectionView })));
+const UnlockNotification = lazy(() => import('./components/progression/UnlockNotification').then(m => ({ default: m.UnlockNotification })));
 
 const preloadResultsView = () =>
     import('./components/views/ResultsView').catch(() => {/* silencioso */});
@@ -67,6 +69,7 @@ function App() {
 
     useAudioSystem(gameState.settings.soundEnabled, volume, actions.updateSettings);
     const { triggerPartyMessage } = usePartyPrompts(gameState, setGameState, batteryLevel, setBatteryLevel);
+    const { pendingUnlocks, progressions, dismissUnlocks, getPlayerProgression } = useProgression(gameState);
 
     const [konamiSequence, setKonamiSequence] = useState<string[]>([]);
     const [konamiActivated, setKonamiActivated] = useState(false);
@@ -392,9 +395,21 @@ function App() {
                         onRenunciaRoleSeen={actions.handleRenunciaRoleSeen}
                         isExiting={isExiting}
                         transitionName={transitionName}
+                        getPlayerProgression={getPlayerProgression}
                     />
                 )}
             </Suspense>
+
+            {/* Progression Unlock Overlay */}
+            {pendingUnlocks.length > 0 && (
+                <Suspense fallback={null}>
+                    <UnlockNotification
+                        unlocks={pendingUnlocks}
+                        theme={theme}
+                        onDismiss={dismissUnlocks}
+                    />
+                </Suspense>
+            )}
 
             <Suspense fallback={null}>
                 <SettingsDrawer

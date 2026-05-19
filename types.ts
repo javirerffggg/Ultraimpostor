@@ -333,3 +333,142 @@ export interface SettingsPreset {
     settings: GameState['settings'];
     createdAt: number;
 }
+
+// ============================================================
+// PROGRESSION SYSTEM
+// ============================================================
+
+export type ProgressionEra = 'base' | 'prestidigitacion' | 'prestidigitacion_elite' | 'supremo';
+export type MedalTier = 'locked' | 'bronze' | 'silver' | 'gold';
+
+export interface XPLogEntry {
+    round: number;
+    amount: number;
+    reason: string;
+    timestamp: number;
+}
+
+export interface RankDefinition {
+    title: string;
+    subtitle: string;
+    era: string;
+    color: string;
+    icon: string;
+    glow?: boolean;
+    special?: string; // 'shimmer' | 'aurora' | 'pulse' | 'rainbow' | 'iridescent' | 'holographic'
+}
+
+export interface PlayerProgression {
+    uid: string;
+    xp: number;
+    totalXpAllTime: number;
+    level: number;
+    era: ProgressionEra;
+    prestigeCount: number;
+    rank: RankDefinition;
+    medals: Record<string, MedalTier>;
+    trophies: string[];
+    collectibles: string[];
+    supremoTitle?: string;
+    legacyPoints?: number;
+    firstSeenAt: number;
+    lastSeenAt: number;
+    xpLog: XPLogEntry[];
+    counters: ProgressionCounters;
+}
+
+export interface ProgressionCounters {
+    // A — Presencia
+    consecutiveRoundsInSession: number;
+    sessionsPlayed: number;
+    timesFirstInList: number;
+    timesLastReveal: number;
+    sameGroupStreakCount: number;
+    lastGroupHash: string;
+    fastRevealCount: number;
+    slowRevealCount: number;
+    timesNotStarter: number;
+    timesStarter: number;
+    protocolsSeenDistinct: string[];
+    explorerModeCount: number;
+    // B — Impostor
+    impStreakCurrent: number;
+    impStreakMax: number;
+    coImpostorPairs: Record<string, number>;
+    renunciaActorCount: number;
+    renunciaAcceptCount: number;
+    renunciaRejectCount: number;
+    renunciaWitnessCount: number;
+    renunciaTransferReceivedCount: number;
+    sifonInitiatorCount: number;
+    sifonVictimCount: number;
+    sifonSilenceVictimCount: number;
+    impWithParanoiaGt7Count: number;
+    impFastRevealCount: number;
+    impSlowRevealCount: number;
+    // C — Civil
+    oracleCount: number;
+    oracleConfirmedCount: number;
+    vanguardiaCount: number;
+    architectCount: number;
+    alcaldeCount: number;
+    memoryModeCount: number;
+    memoryHardCount: number;
+    nexusActiveCount: number;
+    civilInTrollCount: number;
+    civilFastRevealCount: number;
+    // D — Categorías
+    categoryRoundCounts: Record<string, number>;
+    distinctCategoriesPlayed: string[];
+    distinctCategoriesInSession: string[];
+    exhaustionCriticalCount: number;
+    repeatedWordCount: number;
+    // E — Eventos
+    trollEventCount: number;
+    trollEspejoCount: number;
+    trollCivilSolitarioCount: number;
+    trollFalseAlarmCount: number;
+    highEntropyCount: number;
+    highParanoiaCount: number;
+    quarantineCount: number;
+    roundsWithoutQuarantine: number;
+    partyModeCount: number;
+    partyAfterHoursCount: number;
+    partyResacaCount: number;
+    hydrationLockedCount: number;
+    debugModeCount: number;
+    leteoGrade3Count: number;
+    konamiActivated: boolean;
+    nightRoundCount: number;
+    morningRoundCount: number;
+    themeRoundCounts: Record<string, number>;
+    soloImpostorWithNPlayers: number[];
+    tripleImpostorCount: number;
+    simultaneousProtocolsMax: number;
+    prismaChoiceCount: number;
+    totalViewTimeSeconds: number;
+    viewTimesLast10: number[];
+    normalSuspicionStreakCount: number;
+    slowSuspicionCount: number;
+    fastSuspicionCount: number;
+    sameGroupExact15Count: number;
+    rotationCompleteCount: number;
+    roundsWithDebugOff: number;
+    impAsKonamiCount: number;
+    maxPlayersInRound: number;
+    roundsInDay: number;
+    completedCollectionIds: string[];
+    favoriteCategoryMaxCount: number;
+    diversityInSessionMax: number;
+}
+
+export interface ProgressionUnlockEvent {
+    type: 'medal_upgrade' | 'trophy' | 'collectible' | 'set_complete' | 'level_up' | 'rank_up' | 'prestige';
+    id: string;
+    name: string;
+    description?: string;
+    xpGained: number;
+    tier?: MedalTier;
+    icon?: string;
+    color?: string;
+}
