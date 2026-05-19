@@ -12,7 +12,7 @@ interface PresetsSectionProps {
     searchQuery?: string;
 }
 
-export const PresetsSection: React.FC<PresetsSectionProps> = ({ presets, onSave, onLoad, onDelete, theme, searchQuery = '' }) => {
+export const PresetsSection: React.FC<PresetsSectionProps> = ({ presets = [], onSave, onLoad, onDelete, theme, searchQuery = '' }) => {
     if (searchQuery && !'perfiles presets configuracion'.includes(searchQuery.toLowerCase())) return null;
 
     const handleSave = () => {
@@ -33,7 +33,7 @@ export const PresetsSection: React.FC<PresetsSectionProps> = ({ presets, onSave,
                         <Save size={14} /> Crear Nuevo Perfil
                     </button>
 
-                    {presets.length > 0 && (
+                    {presets && presets.length > 0 && (
                         <div className="space-y-2 mt-4">
                             {presets.map(preset => (
                                 <div key={preset.id} className="flex items-center justify-between p-3 rounded-xl border" style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderColor: `${theme.border}40` }}>

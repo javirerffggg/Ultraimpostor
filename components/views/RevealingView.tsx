@@ -359,9 +359,9 @@ export const RevealingView: React.FC<Props> = React.memo(({
             otherPlayers={gameState.gameData.filter(p => p.id !== currentPlayer.id)}
             theme={theme}
             canTransfer={
-                gameState.gameData.filter(p =>
+                gameState.gameData.filter((p, index) =>
+                    index > gameState.currentPlayerIndex &&
                     !p.isImp &&
-                    p.id !== currentPlayer.id &&
                     !p.isArchitect &&
                     p.id !== gameState.oracleSetup?.oraclePlayerId
                 ).length > 0
@@ -381,27 +381,25 @@ export const RevealingView: React.FC<Props> = React.memo(({
         />
     ) : null;
 
+    const sifonSelection = sifonPending ? (
+        <SifonDecisionView
+            player={currentPlayer}
+            theme={theme}
+            onDecision={onSifonDecision}
+        />
+    ) : null;
+
+    const prismaSelection = prismaPending ? (
+        <PrismaDecisionView
+            player={currentPlayer}
+            theme={theme}
+            onDecision={onPrismaDecision}
+        />
+    ) : null;
+
     return (
         <div className="flex flex-col h-full items-center justify-center p-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] relative z-10">
             {auraExplosion}
-
-            {/* PROTOCOLO SIFÓN: overlay full-screen cuando el jugador activo tiene decisión pendiente */}
-            {sifonPending && (
-                <SifonDecisionView
-                    player={currentPlayer}
-                    theme={theme}
-                    onDecision={onSifonDecision}
-                />
-            )}
-
-            {/* PROTOCOLO PRISMA: overlay full-screen cuando el jugador activo tiene decisión pendiente */}
-            {prismaPending && (
-                <PrismaDecisionView
-                    player={currentPlayer}
-                    theme={theme}
-                    onDecision={onPrismaDecision}
-                />
-            )}
 
             {isParty && gameState.currentDrinkingPrompt && (
                 <div className="absolute top-20 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
@@ -468,10 +466,22 @@ export const RevealingView: React.FC<Props> = React.memo(({
                         selection={architectSelection}
                     />
                 ) : isRenunciaPhase2 ? (
-                    <RenunciaFlipGate
+                    <ArchitectBloomGate
                         theme={theme}
                         front={standardCard}
-                        back={renunciaBack}
+                        selection={renunciaBack}
+                    />
+                ) : sifonPending && sifonSelection ? (
+                    <ArchitectBloomGate
+                        theme={theme}
+                        front={standardCard}
+                        selection={sifonSelection}
+                    />
+                ) : prismaPending && prismaSelection ? (
+                    <ArchitectBloomGate
+                        theme={theme}
+                        front={standardCard}
+                        selection={prismaSelection}
                     />
                 ) : (
                     // Tarjeta estándar + badge de filtración si el civil recibió las pistas del sifonador

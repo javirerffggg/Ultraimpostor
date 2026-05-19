@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { GameState, ThemeConfig, ThemeName } from '../../types';
+import { GameState, ThemeConfig, ThemeName, SettingsPreset } from '../../types';
 import { Users, X, Save, Check, Database, LayoutGrid, Settings, ChevronRight, ChevronDown, Lock, Droplets, ScanEye, Ghost, ShieldCheck, Network, Beer, Eye, Zap, UserMinus, Brain, Gavel, AlertTriangle, Gamepad2, Pencil, Pipette, Sparkles, Palette, Shield, ArrowUp, ArrowDown } from 'lucide-react';
 import { GameModeWithTabs, GameModeItem } from '../GameModeWithTabs';
 import { CategorySelector } from '../CategorySelector';
@@ -43,6 +43,10 @@ interface Props {
     volume?: number;
     setVolume?: (v: number) => void;
     onOpenHowToPlay?: () => void;
+    settingsPresets?: SettingsPreset[];
+    onSaveSettingsPreset?: (name: string) => void;
+    onLoadSettingsPreset?: (id: string) => void;
+    onDeleteSettingsPreset?: (id: string) => void;
 }
 
 export const SetupView: React.FC<Props> = ({
@@ -51,7 +55,8 @@ export const SetupView: React.FC<Props> = ({
     theme, isPixelating, hydrationTimer, onHydrationUnlock, onCyclePlayerColor,
     onToggleCategory, onToggleCollection, onToggleAllCategories, onSetCategories,
     onToggleFavoriteCategory, onBlockCategory, themeName, setThemeName,
-    volume, setVolume, onOpenHowToPlay
+    volume, setVolume, onOpenHowToPlay,
+    settingsPresets, onSaveSettingsPreset, onLoadSettingsPreset, onDeleteSettingsPreset
 }) => {
     const [newPlayerName, setNewPlayerName] = useState('');
     const [showAutocomplete, setShowAutocomplete] = useState(false);
@@ -788,6 +793,10 @@ export const SetupView: React.FC<Props> = ({
                                 volume={volume}
                                 setVolume={setVolume}
                                 isInline={true}
+                                settingsPresets={settingsPresets || []}
+                                onSaveSettingsPreset={onSaveSettingsPreset || (() => {})}
+                                onLoadSettingsPreset={onLoadSettingsPreset || (() => {})}
+                                onDeleteSettingsPreset={onDeleteSettingsPreset || (() => {})}
                             />
                         </div>
                     )}

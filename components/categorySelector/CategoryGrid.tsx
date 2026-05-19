@@ -51,10 +51,17 @@ export const CategoryGrid: React.FC<Props> = ({
                 const count = wordCounts[cat];
 
                 return (
-                    <button
+                    <div
                         key={cat}
-                        onClick={() => onToggleCategory(cat)}
-                        disabled={isBlacklisted}
+                        onClick={() => { if (!isBlacklisted) onToggleCategory(cat); }}
+                        role="button"
+                        tabIndex={isBlacklisted ? -1 : 0}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                if (!isBlacklisted) onToggleCategory(cat);
+                            }
+                        }}
                         style={{
                             backgroundColor: isBlacklisted
                                 ? 'rgba(0,0,0,0.5)'
@@ -63,10 +70,11 @@ export const CategoryGrid: React.FC<Props> = ({
                                 ? 'rgba(255,0,0,0.3)'
                                 : isActive ? theme.accent : theme.border,
                             color: isBlacklisted ? '#666' : isActive ? theme.text : theme.sub,
-                            opacity: isBlacklisted ? 0.6 : 1
+                            opacity: isBlacklisted ? 0.6 : 1,
+                            cursor: isBlacklisted ? 'not-allowed' : 'pointer'
                         }}
                         className={`
-                            group relative w-full rounded-xl border font-black text-center
+                            group relative w-full rounded-xl border font-black text-center select-none
                             transition-all active:scale-95 flex flex-col items-center justify-center overflow-hidden
                             ${isCompactMode ? 'h-16 p-1 text-[8px]' : 'h-24 p-2 text-[9px]'}
                         `}
@@ -134,7 +142,7 @@ export const CategoryGrid: React.FC<Props> = ({
                                 )}
                             </div>
                         )}
-                    </button>
+                    </div>
                 );
             })}
         </div>

@@ -155,12 +155,10 @@ export const applyRenunciaDecision = (
                 return applyRenunciaDecision('reject', gameData, renunciaData, wordPair, stats, useHintMode, candidateRevealIndex, architectId, oracleId);
             }
             
-            // FIX: Se elimina la restricción `index > candidateIndex`.
-            // El receptor puede ser cualquier civil sin rol especial,
-            // independientemente de su posición en el orden de revelación.
-            const eligiblePlayers = gameData.filter(p => 
+            // Restricción: El receptor debe ser un jugador posterior en el orden de revelación (index > candidateIndex)
+            const eligiblePlayers = gameData.filter((p, index) => 
+                index > candidateIndex &&
                 !p.isImp && 
-                p.id !== renunciaData.candidatePlayerId &&
                 p.id !== architectId &&
                 p.id !== oracleId
             );

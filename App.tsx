@@ -346,6 +346,10 @@ function App() {
                         volume={volume}
                         setVolume={setVolume}
                         onOpenHowToPlay={() => setHowToPlayOpen(true)}
+                        settingsPresets={settingsPresets}
+                        onSaveSettingsPreset={actions.saveSettingsPreset}
+                        onLoadSettingsPreset={actions.loadSettingsPreset}
+                        onDeleteSettingsPreset={actions.deleteSettingsPreset}
                     />
                 )}
 
