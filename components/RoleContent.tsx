@@ -258,14 +258,16 @@ export const RoleContent: React.FC<RoleContentProps> = ({
                         )}
 
                         {player.isImp && player.nexusPartners && player.nexusPartners.length > 0 && (
-                            <div className="mt-6 w-full bg-black/40 border border-red-500/50 rounded-xl p-4 backdrop-blur-md animate-in fade-in slide-in-from-bottom duration-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
-                                <div className="flex items-center gap-2 mb-2 border-b border-red-500/20 pb-2">
-                                    <Network size={14} className="text-red-400 animate-pulse" />
-                                    <span className="text-[10px] font-black text-red-400 uppercase tracking-widest">NEXUS ACTIVA</span>
+                            <div className="mt-6 w-full bg-black/60 border border-red-500/60 rounded-xl p-4 backdrop-blur-md animate-in fade-in slide-in-from-bottom duration-500 shadow-[0_0_20px_rgba(239,68,68,0.35)]">
+                                <div className="flex items-center gap-2 mb-2 border-b border-red-500/30 pb-2">
+                                    <Network size={14} className="text-red-300 animate-pulse" />
+                                    <span className="text-xs font-black text-red-300 uppercase tracking-widest drop-shadow-[0_0_6px_rgba(239,68,68,0.4)]">
+                                        {player.nexusPartners.length === 1 ? 'El otro impostor es' : 'Los otros impostores son'}
+                                    </span>
                                 </div>
                                 <div className="flex flex-wrap justify-center gap-2">
                                     {player.nexusPartners.map((partnerName, idx) => (
-                                        <span key={idx} className="text-sm font-black text-white bg-red-600/80 px-3 py-1 rounded shadow-sm uppercase tracking-wider">
+                                        <span key={idx} className="text-sm font-black text-white bg-red-600/90 px-3 py-1.5 rounded shadow-md uppercase tracking-wider">
                                             {partnerName}
                                         </span>
                                     ))}
