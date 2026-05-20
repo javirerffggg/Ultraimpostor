@@ -354,7 +354,7 @@ export const RevealingView: React.FC<Props> = React.memo(({
                     setTimeout(() => {
                         setShowArchitectSelection(true);
                         setIsArchitectTransitioning(false);
-                    }, 400);
+                    }, 150);
                 } else if (!currentPlayer.isOracle) {
                     setHasSeenCurrentCard(true);
                 }
@@ -485,11 +485,11 @@ export const RevealingView: React.FC<Props> = React.memo(({
                         </div>
                     ) : (
                         <div
-                            className="w-full transition-all duration-300 ease-out"
+                            className="w-full transition-all duration-150 ease-out"
                             style={{
                                 opacity: isArchitectTransitioning ? 0 : 1,
-                                transform: isArchitectTransitioning ? 'scale(0.95)' : 'scale(1)',
-                                filter: isArchitectTransitioning ? 'blur(4px)' : 'none'
+                                transform: isArchitectTransitioning ? 'scale(0.98)' : 'scale(1)',
+                                filter: isArchitectTransitioning ? 'blur(2px)' : 'none'
                             }}
                         >
                             {standardCard}

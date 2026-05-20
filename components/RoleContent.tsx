@@ -125,12 +125,23 @@ export const RoleContent: React.FC<RoleContentProps> = ({
                     </div>
                 )}
 
+                {player.isArchitect && (
+                    <div className="flex flex-col items-center gap-1 mb-2 mt-1 animate-in fade-in zoom-in duration-300">
+                        <span className="text-xs font-black text-green-500 uppercase tracking-widest">
+                            Eres un civil
+                        </span>
+                        <span className="text-[10px] text-white/70 font-bold uppercase tracking-wider text-center max-w-[200px] leading-snug">
+                            Te ha tocado elegir la palabra de la ronda
+                        </span>
+                    </div>
+                )}
+
                 <h3 
-                    className={`text-xl font-black uppercase tracking-widest ${player.isImp ? 'text-red-500 glitch-text-anim' : (player.isOracle ? 'text-violet-400' : (player.isAlcalde ? 'gold-glow' : 'text-green-500'))}`} 
-                    data-text={player.isOracle ? 'ORÁCULO' : player.role}
+                    className={`text-xl font-black uppercase tracking-widest ${player.isImp ? 'text-red-500 glitch-text-anim' : (player.isOracle ? 'text-violet-400' : (player.isAlcalde ? 'gold-glow' : (player.isArchitect ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]' : 'text-green-500')))}`} 
+                    data-text={player.isOracle ? 'ORÁCULO' : (player.isArchitect ? 'ARQUITECTO' : player.role)}
                     style={player.isAlcalde ? { color: '#FFD700' } : {}}
                 >
-                    {player.isOracle ? 'ORÁCULO' : player.role}
+                    {player.isOracle ? 'ORÁCULO' : (player.isArchitect ? 'ARQUITECTO' : player.role)}
                 </h3>
 
                 {player.isVanguardia && (

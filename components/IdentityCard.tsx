@@ -73,7 +73,7 @@ export const IdentityCard: React.FC<Props> = ({
     };
 
     const roleColor = getRoleColor();
-    const activeColor = isHolding ? roleColor : color;
+    const activeColor = (isHolding || isArchitectLoading) ? roleColor : color;
 
     // Reinicios y temporizador de animación al cambiar de jugador
     useEffect(() => {
@@ -177,7 +177,7 @@ export const IdentityCard: React.FC<Props> = ({
 
     const idleShadowOuter = `0 0 25px ${color}40, 0 0 50px ${color}20`;
     const revealShadowOuter = `0 0 40px ${roleColor}, 0 0 80px ${roleColor}60`;
-    const insetShadow = isHolding ? `inset 0 0 40px ${roleColor}30` : `inset 0 0 30px ${color}10`;
+    const insetShadow = (isHolding || isArchitectLoading) ? `inset 0 0 40px ${roleColor}30` : `inset 0 0 30px ${color}10`;
 
     const premiumStyle: React.CSSProperties = isPremium ? {
         backgroundImage: `linear-gradient(135deg, ${theme.cardBg} 0%, ${activeColor}10 100%)`,
@@ -277,7 +277,7 @@ export const IdentityCard: React.FC<Props> = ({
                         className="absolute inset-0 transition-opacity duration-300 ease-out"
                         style={{
                             boxShadow: idleShadowOuter,
-                            opacity: isHolding ? 0 : 1,
+                            opacity: (isHolding || isArchitectLoading) ? 0 : 1,
                             willChange: 'opacity',
                             borderRadius: theme.radius
                         }}
@@ -286,7 +286,7 @@ export const IdentityCard: React.FC<Props> = ({
                         className="absolute inset-0 transition-opacity duration-300 ease-out"
                         style={{
                             boxShadow: revealShadowOuter,
-                            opacity: isHolding ? 1 : 0,
+                            opacity: (isHolding || isArchitectLoading) ? 1 : 0,
                             willChange: 'opacity',
                             borderRadius: theme.radius
                         }}
@@ -312,8 +312,8 @@ export const IdentityCard: React.FC<Props> = ({
                         </div>
                     )}
 
-                    <div className={`absolute inset-0 z-10 flex flex-col ${isHolding ? 'justify-start pt-8 pb-12' : 'justify-between py-8'} px-6 transition-none`}>
-                        {!isHolding ? (
+                    <div className={`absolute inset-0 z-10 flex flex-col ${(isHolding || isArchitectLoading) ? 'justify-start pt-8 pb-12' : 'justify-between py-8'} px-6 transition-none`}>
+                        {(!isHolding && !isArchitectLoading) ? (
                             <>
                                 <div className="w-full text-center animate-sync">
                                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ backgroundImage: `linear-gradient(to right, ${theme.sub}, ${theme.text}, ${theme.sub})`, backgroundSize: '100% auto', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', color: theme.sub }}>
