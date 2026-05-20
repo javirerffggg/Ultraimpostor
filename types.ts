@@ -22,7 +22,7 @@ export interface ThemeConfig {
     radius: string;
     font: string;
     border: string;
-    particleType: 'aura' | 'silk' | 'stardust' | 'foliage' | 'aurora' | 'goldleaf' | 'plankton' | 'ember' | 'circle' | 'binary' | 'rain';
+    particleType: 'aura' | 'silk' | 'stardust' | 'foliage' | 'aurora' | 'goldleaf' | 'plankton' | 'ember' | 'circle' | 'binary' | 'rain' | 'none';
     blur?: string;
     shadow?: string;
     particleColor?: string | string[];
@@ -31,7 +31,7 @@ export interface ThemeConfig {
     pulseInterval?: number;
 }
 
-export type ThemeName = 'aura' | 'luminous' | 'silk_soul' | 'nebula_dream' | 'crystal_garden' | 'aurora_borealis' | 'liquid_gold' | 'luminescent_ocean' | 'zen_sunset' | 'midnight' | 'bond' | 'turing' | 'solar' | 'illojuan' | 'obsidian' | 'cyber' | 'material' | 'zenith' | 'protocol' | 'ethereal' | 'terminal84' | 'soft' | 'noir' | 'paper' | 'space' | 'nightclub';
+export type ThemeName = 'aura' | 'luminous' | 'silk_soul' | 'nebula_dream' | 'crystal_garden' | 'aurora_borealis' | 'liquid_gold' | 'luminescent_ocean' | 'zen_sunset' | 'midnight' | 'bond' | 'turing' | 'solar' | 'illojuan' | 'obsidian' | 'cyber' | 'material' | 'zenith' | 'protocol' | 'ethereal' | 'terminal84' | 'soft' | 'noir' | 'paper' | 'space' | 'nightclub' | 'clean_dark' | 'clean_light';
 
 export interface CuratedCollection {
     id: string;

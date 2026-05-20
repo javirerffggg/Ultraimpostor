@@ -656,25 +656,35 @@ const InfinitumTab: React.FC<{
             </div>
             
             {/* Leyenda */}
-            <div className="p-3 rounded-lg space-y-1 text-[10px]"
+            <div className="p-3 rounded-lg space-y-2 text-[10px]"
                 style={{ 
                     backgroundColor: `${theme.accent}10`,
                     border: `1px solid ${theme.border}`
                 }}>
-                <div className="font-bold mb-2" style={{ color: theme.text }}>
-                    💡 Cómo Funciona
+                <div className="font-bold mb-1" style={{ color: theme.text }}>
+                    🧬 Selección de Impostor (Infinitum)
                 </div>
                 <div style={{ color: theme.sub }}>
-                    • <strong>Racha Civil:</strong> +15% por cada ronda sin ser impostor
+                    • <strong>Racha Civil:</strong> Aumenta la probabilidad base.
                 </div>
                 <div style={{ color: theme.sub }}>
-                    • <strong>Ratio Bajo:</strong> +20% si has sido impostor menos del 30%
+                    • <strong>Cuarentena:</strong> Impide repetir como impostor a corto plazo.
+                </div>
+                
+                <div className="font-bold mt-3 mb-1" style={{ color: theme.text }}>
+                    👁️ Medidor Global de Paranoia
                 </div>
                 <div style={{ color: theme.sub }}>
-                    • <strong>Cuarentena:</strong> -50% durante penalización
+                    La paranoia sube si el azar del grupo es demasiado predecible (Ruptura al 90%):
                 </div>
                 <div style={{ color: theme.sub }}>
-                    • <strong>Threshold:</strong> Línea blanca marca el 70% de activación
+                    • <strong>Patrón Espacial:</strong> +20% a +40% si los impostores rotan en asientos adyacentes (ej. Jugador 1 ➔ 2 ➔ 3).
+                </div>
+                <div style={{ color: theme.sub }}>
+                    • <strong>El Repetidor:</strong> +5% a +15% si alguien es elegido impostor repetidas veces superando la frecuencia esperada del grupo.
+                </div>
+                <div style={{ color: theme.sub }}>
+                    • <strong>Late Game:</strong> Sube por tiempo en rondas avanzadas (&gt;8).
                 </div>
             </div>
             <style>{`

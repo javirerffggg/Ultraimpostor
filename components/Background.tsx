@@ -10,6 +10,11 @@ interface BackgroundProps {
 }
 
 export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }: BackgroundProps) => {
+    // STATIC THEMES: No particles, no canvas, no blobs — just flat background
+    if (theme.particleType === 'none') {
+        return null;
+    }
+
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const mousePosRef = useRef({ x: 50, y: 50 }); // Percentage 0-100
     const isPageVisibleRef = useRef(true);
@@ -122,19 +127,19 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
             char: string;
             opacity: number;
             originalSpeedY: number;
-            trail: {x: number, y: number, opacity: number}[]; // For Cyber theme
+            trail: { x: number, y: number, opacity: number }[]; // For Cyber theme
             hue: number; // For Party Mode
-            
+
             // Premium Properties
             rotation: number;
             rotationSpeed: number;
             oscillationOffset: number;
             customColor: string;
-            
+
             constructor() {
                 this.x = Math.random() * canvas!.width;
                 this.y = Math.random() * canvas!.height;
-                
+
                 // Base Speed
                 const baseSpeed = theme.particleSpeed || 0.5;
 
@@ -178,31 +183,31 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                     default:
                         // Classic behavior
                         this.size = Math.random() * (theme.particleType !== 'circle' ? 14 : 3) + 1;
-                        this.speedY = theme.particleType === 'rain' || theme.particleType === 'binary' 
-                            ? Math.random() * 3 + 2 
+                        this.speedY = theme.particleType === 'rain' || theme.particleType === 'binary'
+                            ? Math.random() * 3 + 2
                             : (Math.random() - 0.5) * 0.5;
-                        this.speedX = theme.particleType === 'rain' || theme.particleType === 'binary' 
-                            ? 0 
+                        this.speedX = theme.particleType === 'rain' || theme.particleType === 'binary'
+                            ? 0
                             : (Math.random() - 0.5) * 0.5;
                 }
 
                 this.originalSpeedY = this.speedY;
-                
+
                 // Character for Binary/Rain
                 this.char = theme.particleType === 'binary' ? (Math.random() > 0.5 ? "1" : "0") : "";
                 if (theme.particleType === 'rain') {
                     const chars = "ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ";
                     this.char = chars[Math.floor(Math.random() * chars.length)];
                 }
-                
+
                 this.opacity = Math.random() * 0.5 + 0.1;
                 this.trail = [];
                 this.hue = Math.random() * 360;
-                
+
                 this.rotation = Math.random() * 360;
                 this.rotationSpeed = (Math.random() - 0.5) * 2;
                 this.oscillationOffset = Math.random() * 100;
-                
+
                 // Color Logic
                 this.customColor = '';
                 if (theme.particleColor) {
@@ -217,12 +222,12 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
             update() {
                 // Game State Reactivity
                 let speedMultiplier = 1;
-                if (phase === 'revealing') speedMultiplier = 0.5; 
+                if (phase === 'revealing') speedMultiplier = 0.5;
                 if (isTroll) speedMultiplier = 4.0;
                 if (isParty) speedMultiplier = 2.0;
 
                 // --- PREMIUM BEHAVIORS ---
-                
+
                 if (theme.particleType === 'silk') {
                     // Sinusoidal movement
                     this.x += Math.sin(time * 0.01 + this.oscillationOffset) * 0.5;
@@ -240,7 +245,7 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                     const mPos = mousePosRef.current;
                     const dx = this.x - (mPos.x * canvas!.width / 100);
                     const dy = this.y - (mPos.y * canvas!.height / 100);
-                    const distSq = dx*dx + dy*dy;
+                    const distSq = dx * dx + dy * dy;
                     const radius = 150;
                     if (distSq < radius * radius) {
                         const dist = Math.sqrt(distSq);
@@ -257,7 +262,7 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
 
                 // Cyber Theme Trail
                 if (theme.name === "Night City") {
-                    this.trail.push({x: this.x, y: this.y, opacity: this.opacity});
+                    this.trail.push({ x: this.x, y: this.y, opacity: this.opacity });
                     if (this.trail.length > 5) this.trail.shift();
                 }
 
@@ -286,7 +291,7 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
 
             draw() {
                 if (!ctx) return;
-                
+
                 // Logic for Colors
                 let drawColor = this.customColor || theme.accent;
 
@@ -296,7 +301,7 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                 } else if (phase === 'revealing' && activeColor && !this.customColor) {
                     drawColor = activeColor;
                 } else if (isTroll) {
-                     drawColor = Math.random() > 0.8 ? '#ef4444' : (this.customColor || theme.accent);
+                    drawColor = Math.random() > 0.8 ? '#ef4444' : (this.customColor || theme.accent);
                 }
 
                 ctx.fillStyle = drawColor;
@@ -309,7 +314,7 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                     ctx.translate(this.x, this.y);
                     ctx.rotate(this.rotation * Math.PI / 180);
                     // Metallic effect simulation via gradient or simple shape
-                    ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+                    ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
                     ctx.restore();
                 } else if (theme.particleType === 'silk') {
                     // Thin lines
@@ -327,14 +332,14 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                     ctx.fill();
                 } else if (theme.particleType === 'foliage') {
-                     // Simple leaf shape approximation
-                     ctx.save();
-                     ctx.translate(this.x, this.y);
-                     ctx.rotate(this.rotation * Math.PI / 180);
-                     ctx.beginPath();
-                     ctx.ellipse(0, 0, this.size, this.size/2, 0, 0, Math.PI * 2);
-                     ctx.fill();
-                     ctx.restore();
+                    // Simple leaf shape approximation
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation * Math.PI / 180);
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, this.size, this.size / 2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
                 } else {
                     // Text based (Binary/Rain)
                     ctx.font = `${this.size}px ${theme.font}`;
@@ -359,7 +364,7 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
             let count = theme.particleCount || (theme.particleType === 'circle' ? 60 : 80);
             if (isTroll || isParty) count *= 1.5;
             count = Math.min(Math.floor(count), 80); // Hard particle count cap for performance
-            
+
             for (let i = 0; i < count; i++) {
                 particles.push(new Particle());
             }
@@ -402,19 +407,19 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
     if (theme.particleType === 'aura') {
         const isLuminous = theme.name.includes("Luminous");
         const useActiveColor = phase === 'revealing' && activeColor;
-        
+
         return (
             <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
                 {/* STOCHASTIC GRAIN LAYER */}
-                <div 
+                <div
                     className="absolute inset-0 z-[1] opacity-[0.05] pointer-events-none mix-blend-overlay"
-                    style={{ 
+                    style={{
                         backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")'
                     }}
                 />
 
                 {/* BLOB 1 (Reduced CSS Blur) */}
-                <div 
+                <div
                     ref={blob1Ref}
                     className="absolute rounded-full blur-[60px] transition-all duration-1000 cubic-bezier(0.1, 0.7, 1.0, 0.1)"
                     style={{
@@ -430,7 +435,7 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                 />
 
                 {/* BLOB 2 (Reduced CSS Blur) */}
-                <div 
+                <div
                     ref={blob2Ref}
                     className="absolute rounded-full blur-[80px] transition-all duration-[2000ms] cubic-bezier(0.1, 0.7, 1.0, 0.1)"
                     style={{
@@ -446,7 +451,7 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                 />
 
                 {/* BLOB 3 (Reduced CSS Blur & visibility check paused when hidden) */}
-                <div 
+                <div
                     ref={blob3Ref}
                     className="absolute rounded-full blur-[100px] animate-[pulse_8s_infinite] transition-all duration-1000"
                     style={{
@@ -465,10 +470,10 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
     }
 
     return (
-        <canvas 
-            ref={canvasRef} 
+        <canvas
+            ref={canvasRef}
             className="fixed inset-0 pointer-events-none z-0 opacity-60 transition-opacity duration-1000"
-            style={{ filter: theme.blur ? `blur(${parseInt(theme.blur)/10}px)` : 'none' }}
+            style={{ filter: theme.blur ? `blur(${parseInt(theme.blur) / 10}px)` : 'none' }}
         />
     );
 }, (prevProps, nextProps) => {

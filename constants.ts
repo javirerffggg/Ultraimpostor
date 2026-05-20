@@ -391,6 +391,32 @@ export const THEMES: Record<ThemeName, ThemeConfig> = {
         font: "'Inter', sans-serif",
         border: "rgba(255, 0, 255, 0.5)",
         particleType: 'circle'
+    },
+    clean_dark: {
+        name: "Pizarra Nocturna",
+        bg: "#111114",
+        cardBg: "rgba(30, 30, 38, 0.85)",
+        accent: "#7C8CF8", // Soft Indigo
+        text: "#E8E8EC",
+        sub: "#8888A0",
+        radius: "1.25rem",
+        font: "'Inter', sans-serif",
+        border: "rgba(124, 140, 248, 0.18)",
+        shadow: "0 4px 24px rgba(0, 0, 0, 0.5)",
+        particleType: 'none'
+    },
+    clean_light: {
+        name: "Lienzo Diurno",
+        bg: "#F5F5F0",
+        cardBg: "rgba(255, 255, 255, 0.82)",
+        accent: "#4A6CF7", // Vivid Blue
+        text: "#1A1A2E",
+        sub: "#6B6B80",
+        radius: "1.25rem",
+        font: "'Inter', sans-serif",
+        border: "rgba(74, 108, 247, 0.15)",
+        shadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
+        particleType: 'none'
     }
 };
 

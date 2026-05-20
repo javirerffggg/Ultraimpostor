@@ -51,7 +51,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
     const lastHapticAt = useRef({ threshold30: false, threshold70: false });
     const viewStartTime = useRef<number>(0);
     const totalViewTime = useRef<number>(0);
-    
+
     const threshold = SWIPE_THRESHOLDS[settings.swipeSensitivity];
 
     // Detectar capacidades del dispositivo para optimizar efectos
@@ -59,7 +59,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
         const cores = navigator.hardwareConcurrency || 4;
         const isIOSSafari = /iPhone|iPad|iPod/.test(navigator.userAgent);
         const isProMotion = window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
-        
+
         if (cores <= 4 || !isIOSSafari) {
             setPerformanceMode('medium');
         } else if (cores >= 6 && isProMotion) {
@@ -76,7 +76,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
         setOracleSelectionMade(false);
         setIsTransmitting(false);
         totalViewTime.current = 0;
-        
+
         if (player.isOracle && !player.isImp) {
             const catDataList = CATEGORIES_DATA[player.category];
             const pair = catDataList?.find(c => c.civ === player.realWord);
@@ -100,11 +100,11 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
     // Bloquear scroll durante drag con optimizaciones específicas para iOS
     useEffect(() => {
         if (!isDragging) return;
-        
+
         const preventScroll = (e: TouchEvent) => {
             if (e.cancelable) e.preventDefault();
         };
-        
+
         document.documentElement.style.scrollBehavior = 'auto';
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'fixed';
@@ -112,7 +112,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
         // @ts-ignore
         document.body.style.WebkitOverflowScrolling = 'auto';
         document.addEventListener('touchmove', preventScroll, { passive: false });
-        
+
         return () => {
             document.documentElement.style.scrollBehavior = '';
             document.body.style.overflow = '';
@@ -133,7 +133,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
         const deltaY = currentY.current - startY.current;
         const clampedY = Math.min(0, deltaY);
         const newProgress = Math.min(100, (Math.abs(clampedY) / threshold) * 100);
-        
+
         // 🚀 Batch state updates para evitar múltiples re-renders
         React.startTransition(() => {
             setDragY(clampedY);
@@ -158,17 +158,17 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
 
     const handlePointerDown = (e: React.PointerEvent) => {
         if (isRevealed || isExiting) return;
-        
+
         startY.current = e.clientY;
         currentY.current = e.clientY;
         setIsDragging(true);
         setIsBouncing(false); // Reset bounce
-        
+
         lastHapticAt.current = { threshold30: false, threshold70: false };
-        
+
         if (viewStartTime.current === 0) viewStartTime.current = Date.now();
-        
-        try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); } catch {}
+
+        try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); } catch { }
     };
 
     const handlePointerMove = (e: React.PointerEvent) => {
@@ -181,14 +181,14 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
 
     const handlePointerUp = (e: React.PointerEvent) => {
         if (!isDragging) return;
-        
+
         if (rafId.current !== null) {
             cancelAnimationFrame(rafId.current);
             rafId.current = null;
         }
-        
+
         setIsDragging(false);
-        try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+        try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch { }
 
         if (progress >= 100) {
             handleComplete();
@@ -234,7 +234,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
     const isHighIntensity = partyIntensity === 'after_hours' || partyIntensity === 'resaca';
 
     return (
-        <div 
+        <div
             className="w-full h-full flex flex-col items-center justify-center px-4 relative swipe-card-container"
             style={{
                 touchAction: 'none',
@@ -245,7 +245,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                 userSelect: 'none'
             }}
         >
-            <div 
+            <div
                 className="mb-8 flex flex-col items-center gap-3 animate-in fade-in slide-in-from-top duration-700"
                 style={{
                     opacity: isExiting ? 0 : 1,
@@ -253,7 +253,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                     transition: 'all 0.4s ease'
                 }}
             >
-                <div 
+                <div
                     className="w-20 h-20 rounded-full border-4 flex items-center justify-center relative overflow-hidden"
                     style={{
                         borderColor: color,
@@ -261,7 +261,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                         boxShadow: `0 0 30px ${color}30`
                     }}
                 >
-                    <div 
+                    <div
                         className="absolute inset-0 rounded-full animate-ping opacity-20"
                         style={{ backgroundColor: color }}
                     />
@@ -280,7 +280,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
             </div>
 
             <div className="relative w-full max-w-[340px] aspect-[3/4] mx-auto" style={{ isolation: 'isolate', transform: 'translateZ(0)' }}>
-                <div 
+                <div
                     className="absolute overflow-hidden"
                     style={{
                         top: '-6px',
@@ -292,14 +292,14 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                         transform: 'translateZ(0)'
                     }}
                 >
-                    <div 
+                    <div
                         className="absolute overflow-hidden transition-all border-[3px]"
                         style={{
                             borderRadius: theme.radius,
                             inset: 0,
                             backgroundColor: theme.cardBg,
                             borderColor: isRevealed ? color : `${theme.border}80`,
-                            boxShadow: isDragging 
+                            boxShadow: isDragging
                                 ? (isRevealed ? `0 0 40px ${color}30` : `0 0 20px ${color}15`)
                                 : (isRevealed ? `0 0 60px ${color}40` : `0 0 ${20 + progress * 0.4}px ${color}${Math.floor(15 + progress * 0.35).toString(16).padStart(2, '0')}`),
                             transform: `translate3d(0, ${Math.max(dragY * 0.08, -10)}px, 0) scale3d(${0.96 + (progress * 0.0004)}, ${0.96 + (progress * 0.0004)}, 1)`,
@@ -312,7 +312,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                         }}
                     >
                         <div className="h-full w-full py-8 px-6">
-                            <RoleContent 
+                            <RoleContent
                                 player={player}
                                 theme={theme}
                                 color={color}
@@ -326,7 +326,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                         </div>
 
                         {!isRevealed && (
-                            <div 
+                            <div
                                 className="absolute pointer-events-none transition-opacity"
                                 style={{
                                     inset: '3px',
@@ -338,7 +338,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                                     transitionDuration: isDragging ? '0ms' : '500ms'
                                 }}
                             >
-                                <div 
+                                <div
                                     className="absolute inset-0 opacity-5"
                                     style={{
                                         borderRadius: 'inherit',
@@ -366,7 +366,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
 
                         {isRevealed && (!player.isOracle || oracleSelectionMade) && (
                             <div className="absolute bottom-8 left-0 w-full flex justify-center animate-in fade-in slide-in-from-bottom duration-500 px-6">
-                                <button 
+                                <button
                                     onClick={handleProceed}
                                     style={{ backgroundColor: color }}
                                     className="px-8 py-3 rounded-full text-white font-bold uppercase tracking-widest text-xs shadow-lg active:scale-95 transition-all"
@@ -379,7 +379,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                 </div>
 
                 {!isExiting && (
-                    <div 
+                    <div
                         onPointerDown={handlePointerDown}
                         onPointerMove={handlePointerMove}
                         onPointerUp={handlePointerUp}
@@ -392,7 +392,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                             boxShadow: isDragging
                                 ? `0 ${Math.max(10, 20 - (progress / 10))}px ${Math.max(30, 60 - (progress / 2))}px rgba(0,0,0,0.3)`
                                 : `0 ${20 - (progress / 10)}px ${60 - (progress / 2)}px rgba(0,0,0,${0.4 - (progress / 400)})`,
-                            transform: isRevealed 
+                            transform: isRevealed
                                 ? 'translate3d(0, -150%, 0) rotate(12deg) scale3d(0.9, 0.9, 1)'
                                 : `translate3d(0, ${dragY}px, 0) rotate(${(dragY / 100) * 2}deg) scale3d(${1 - (progress * 0.0002)}, ${1 - (progress * 0.0002)}, 1)`,
                             transitionDuration: isDragging ? '0ms' : '500ms',
@@ -403,7 +403,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                                 linear-gradient(135deg, ${theme.accent}15 0%, ${theme.cardBg} 50%, ${theme.accent}10 100%),
                                 repeating-linear-gradient(45deg, transparent, transparent 10px, ${theme.accent}03 10px, ${theme.accent}03 20px)
                             `,
-                            backdropFilter: isDragging 
+                            backdropFilter: isDragging
                                 ? (performanceMode === 'high' ? 'blur(15px)' : 'blur(8px)')
                                 : (theme.blur ? `blur(${theme.blur})` : 'blur(30px)'),
                             willChange: isDragging ? 'transform, box-shadow' : 'auto'
@@ -428,7 +428,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                         )}
 
                         {isDragging && performanceMode !== 'low' && (
-                            <div 
+                            <div
                                 className="absolute left-0 right-0 h-[2px] pointer-events-none"
                                 style={{
                                     top: `${progress}%`,
@@ -439,7 +439,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                             />
                         )}
 
-                        <div 
+                        <div
                             className="absolute inset-0 pointer-events-none transition-opacity"
                             style={{
                                 background: `radial-gradient(circle at 50% ${50 + progress * 0.5}%, ${color}${isDragging ? '10' : '15'}, transparent 60%)`,
@@ -461,26 +461,26 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
 
                             <div className="relative flex items-center justify-center">
                                 {performanceMode !== 'low' && (
-                                    <div 
+                                    <div
                                         className={`absolute inset-0 rounded-full scale-150 ${!isDragging ? 'animate-pulse' : ''}`}
-                                        style={{ 
+                                        style={{
                                             backgroundColor: `${color}20`,
                                             opacity: isDragging ? 0.3 : (0.6 - (progress * 0.004)),
                                             filter: isDragging ? 'blur(20px)' : 'blur(40px)'
-                                        }} 
+                                        }}
                                     />
                                 )}
-                                
+
                                 {!isDragging && performanceMode === 'high' && (
-                                    <div 
+                                    <div
                                         className="absolute w-32 h-32 rounded-full border-2 border-dashed animate-spin-slow opacity-20"
                                         style={{ borderColor: theme.accent }}
                                     />
                                 )}
-                                
-                                <div 
+
+                                <div
                                     className="relative text-7xl transition-transform"
-                                    style={{ 
+                                    style={{
                                         transform: `scale3d(${1 - (progress * 0.003)}, ${1 - (progress * 0.003)}, 1) ${isDragging ? '' : `rotateY(${progress * 1.8}deg)`}`,
                                         filter: `blur(${progress * 0.06}px)`,
                                         transitionDuration: isDragging ? '0ms' : '200ms'
@@ -490,9 +490,9 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                                 </div>
                             </div>
 
-                            <div 
+                            <div
                                 className="flex flex-col items-center gap-4 transition-all"
-                                style={{ 
+                                style={{
                                     opacity: Math.max(0, 1 - (progress / 40)),
                                     transform: `translate3d(0, ${progress * 0.2}px, 0)`,
                                     transitionDuration: isDragging ? '0ms' : '300ms'
@@ -500,19 +500,19 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                             >
                                 <div className="flex flex-col items-center -space-y-4">
                                     {[0, 1, 2].map(i => (
-                                        <ChevronUp 
+                                        <ChevronUp
                                             key={i}
-                                            size={32} 
-                                            style={{ 
+                                            size={32}
+                                            style={{
                                                 color: theme.accent,
                                                 filter: `drop-shadow(0 0 4px ${theme.accent})`
                                             }}
                                             className={isDragging ? '' : 'animate-bounce'}
-                                            {...(!isDragging && { style: { animationDelay: `${i * 0.15}s` }})}
+                                            {...(!isDragging && { style: { animationDelay: `${i * 0.15}s` } })}
                                         />
                                     ))}
                                 </div>
-                                <p 
+                                <p
                                     className="text-sm font-black uppercase tracking-[0.2em] text-center"
                                     style={{
                                         background: `linear-gradient(135deg, ${theme.text}, ${theme.accent})`,
@@ -528,9 +528,9 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                             <div className="w-full space-y-2">
                                 {isDragging && (
                                     <div className="text-center">
-                                        <span 
+                                        <span
                                             className="text-2xl font-black tabular-nums"
-                                            style={{ 
+                                            style={{
                                                 color: progress > 70 ? color : theme.text,
                                                 textShadow: progress > 70 ? `0 0 15px ${color}` : 'none',
                                                 transition: 'color 0.2s ease'
@@ -541,9 +541,9 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                                     </div>
                                 )}
                                 <div className="relative w-full h-2 bg-white/5 rounded-full overflow-hidden backdrop-blur-sm">
-                                    <div 
+                                    <div
                                         className="absolute inset-y-0 left-0 rounded-full"
-                                        style={{ 
+                                        style={{
                                             width: `${progress}%`,
                                             background: `linear-gradient(90deg, ${theme.accent}, ${color})`,
                                             boxShadow: `0 0 ${isDragging ? 10 : 15}px ${progress > 50 ? color : theme.accent}80`,
@@ -551,7 +551,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                                         }}
                                     >
                                         {!isDragging && performanceMode === 'high' && (
-                                            <div 
+                                            <div
                                                 className="absolute inset-0 animate-shimmer"
                                                 style={{
                                                     background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',

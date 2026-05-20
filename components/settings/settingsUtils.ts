@@ -1,13 +1,14 @@
 import { ThemeName } from '../../types';
 
-export type ThemeCategory = 'exclusivo' | 'sensorial' | 'oscuro' | 'vibrante' | 'retro';
+export type ThemeCategory = 'exclusivo' | 'sensorial' | 'oscuro' | 'vibrante' | 'retro' | 'estático';
 
 export const THEME_CATEGORIES: Record<ThemeCategory, ThemeName[]> = {
     exclusivo: ['luminous', 'aura'],
     sensorial: ['silk_soul', 'nebula_dream', 'crystal_garden', 'aurora_borealis', 'liquid_gold', 'luminescent_ocean', 'zen_sunset'],
     oscuro: ['midnight', 'obsidian', 'space', 'zenith', 'bond', 'noir', 'protocol', 'ethereal'],
     vibrante: ['cyber', 'nightclub', 'solar', 'illojuan', 'material'],
-    retro: ['terminal84', 'turing', 'paper', 'soft']
+    retro: ['terminal84', 'turing', 'paper', 'soft'],
+    'estático': ['clean_dark', 'clean_light']
 };
 
 export const PREMIUM_THEMES: ThemeName[] = ['aura', 'luminous'];
