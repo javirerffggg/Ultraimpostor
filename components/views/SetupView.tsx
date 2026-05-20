@@ -1418,12 +1418,12 @@ export const SetupView: React.FC<Props> = ({
                     </div>
                 </div>
 
-                {/* ─── ACCIONES (Mejora 6: h fijo para simetría) ──────── */}
+                {/* ─── ACCIONES (Mejora 6: h de 102px para dar espacio al texto) ──────── */}
                 <div className="grid grid-cols-2 gap-3">
                     <button
                         onClick={onOpenCategories}
                         className="relative p-4 rounded-[24px] border overflow-hidden group text-left transition-all duration-300 active:scale-95 hover:scale-[1.02]"
-                        style={{ backgroundColor: `${theme.cardBg}F5`, borderColor: theme.border, boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)', height: '88px' }}
+                        style={{ backgroundColor: `${theme.cardBg}F5`, borderColor: theme.border, boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)', height: '102px' }}
                     >
                         <div className="relative z-10 flex flex-col justify-between h-full">
                             <div className="p-2 rounded-xl w-fit" style={{ backgroundColor: `${theme.accent}15` }}>
@@ -1439,7 +1439,7 @@ export const SetupView: React.FC<Props> = ({
                     <button
                         onClick={onOpenSettings}
                         className="relative p-4 rounded-[24px] border overflow-hidden group text-left transition-all duration-300 active:scale-95 hover:scale-[1.02]"
-                        style={{ backgroundColor: `${theme.cardBg}F5`, borderColor: theme.border, boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)', height: '88px' }}
+                        style={{ backgroundColor: `${theme.cardBg}F5`, borderColor: theme.border, boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)', height: '102px' }}
                     >
                         <div className="relative z-10 flex flex-col justify-between h-full">
                             <div className="p-2 rounded-xl w-fit" style={{ backgroundColor: theme.border }}>
@@ -1455,7 +1455,7 @@ export const SetupView: React.FC<Props> = ({
                     <button
                         onClick={() => setShowProgressionModal(true)}
                         className="col-span-2 relative p-4 rounded-[24px] border overflow-hidden group text-left transition-all duration-300 active:scale-95 hover:scale-[1.02]"
-                        style={{ backgroundColor: `${theme.cardBg}F5`, borderColor: theme.border, boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)', height: '88px' }}
+                        style={{ backgroundColor: `${theme.cardBg}F5`, borderColor: theme.border, boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)', height: '102px' }}
                     >
                         <div className="relative z-10 flex flex-col justify-between h-full">
                             <div className="flex items-center justify-between">
