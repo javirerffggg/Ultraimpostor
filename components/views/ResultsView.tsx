@@ -270,7 +270,7 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
         holdTimeoutRef.current = window.setTimeout(() => {
             setIsDecrypted(true);
             if (navigator.vibrate) navigator.vibrate([50, 50, 200]);
-        }, 1500);
+        }, 1000);
     };
 
     const handlePointerUpOrLeave = (e: React.PointerEvent) => {
@@ -426,9 +426,9 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
                             <div 
                                 className="absolute inset-0 transition-all duration-300"
                                 style={{
-                                    backgroundColor: isHoldingDecrypt ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                                    backgroundColor: isHoldingDecrypt ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.08)',
                                     backdropFilter: 'blur(20px)',
-                                    border: `1.5px solid ${isHoldingDecrypt ? theme.accent : `${theme.border}80`}`,
+                                    border: `1.5px solid ${isHoldingDecrypt ? theme.accent : theme.border}`,
                                     borderRadius: '24px',
                                     boxShadow: isHoldingDecrypt 
                                         ? `0 0 50px -10px ${theme.accent}40, inset 0 0 12px ${theme.accent}15`
@@ -441,7 +441,7 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
                                 className="absolute inset-0 origin-left transition-transform"
                                 style={{
                                     transform: isHoldingDecrypt ? 'scaleX(1)' : 'scaleX(0)',
-                                    transition: isHoldingDecrypt ? 'transform 1500ms linear' : 'transform 300ms cubic-bezier(0.16, 1, 0.3, 1)',
+                                    transition: isHoldingDecrypt ? 'transform 1000ms linear' : 'transform 300ms cubic-bezier(0.16, 1, 0.3, 1)',
                                     background: `linear-gradient(90deg, ${theme.accent}30, ${theme.accent}80)`,
                                     borderRadius: '24px'
                                 }}
@@ -453,14 +453,14 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
                                     <div 
                                         className="absolute inset-0 rounded-full border-2 transition-all duration-500"
                                         style={{ 
-                                            borderColor: isHoldingDecrypt ? theme.accent : 'rgba(255,255,255,0.15)',
+                                            borderColor: isHoldingDecrypt ? theme.accent : 'rgba(255,255,255,0.30)',
                                             transform: isHoldingDecrypt ? 'scale(1.1)' : 'scale(1)'
                                         }}
                                     />
                                     <div 
                                         className="relative z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
                                         style={{
-                                            backgroundColor: isHoldingDecrypt ? 'white' : 'rgba(255,255,255,0.08)',
+                                            backgroundColor: isHoldingDecrypt ? 'white' : 'rgba(255,255,255,0.15)',
                                             color: isHoldingDecrypt ? 'black' : 'white'
                                         }}
                                     >
@@ -479,7 +479,7 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
                                         {isHoldingDecrypt ? "Revelando..." : "Mantener pulsado"}
                                     </span>
                                     <span 
-                                        className="block text-[9px] uppercase tracking-wider mt-0.5 opacity-60 font-semibold"
+                                        className="block text-[9px] uppercase tracking-wider mt-0.5 opacity-80 font-semibold"
                                         style={{ color: theme.sub }}
                                     >
                                         {isHoldingDecrypt ? "Analizando registros..." : "Para ver resultados"}
@@ -490,7 +490,7 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
                                     <ArrowRight 
                                         size={18} 
                                         style={{ color: theme.sub }} 
-                                        className={`transition-all duration-500 ${isHoldingDecrypt ? 'translate-x-1 opacity-100 text-white' : 'translate-x-0 opacity-40'}`} 
+                                        className={`transition-all duration-500 ${isHoldingDecrypt ? 'translate-x-1 opacity-100 text-white' : 'translate-x-0 opacity-70'}`} 
                                     />
                                 </div>
                             </div>
