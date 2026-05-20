@@ -574,7 +574,7 @@ export const RevealingView: React.FC<Props> = React.memo(({
                 )}
             </div>
 
-            {!transitionName && !isRenunciaPhase2 && !isArchitectCard && !sifonPending && !prismaPending && (
+            {!transitionName && !isRenunciaPhase2 && (!isArchitectCard || !showArchitectSelection) && !sifonPending && !prismaPending && (
                 <div className="mt-auto mb-6 flex flex-col items-center gap-2.5 shrink-0">
                     <span
                         className="text-[9px] font-mono tracking-[0.3em] uppercase opacity-30"

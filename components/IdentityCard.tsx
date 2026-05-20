@@ -368,29 +368,29 @@ export const IdentityCard: React.FC<Props> = ({
                 </div>
             </div>
 
-            {readyForNext && (
-                <div className="h-16 w-full flex items-center justify-center relative mt-4">
-                    <button
-                        onPointerDown={(e) => { if (isButtonVisible) { e.preventDefault(); if (navigator.vibrate) navigator.vibrate(20); nextAction(totalViewTime.current); } }}
-                        disabled={!isButtonVisible}
-                        style={{ backgroundColor: color, opacity: isButtonVisible ? 1 : 0, transform: isButtonVisible ? 'scale(1)' : 'scale(0.95)', pointerEvents: isButtonVisible ? 'auto' : 'none', touchAction: 'manipulation', boxShadow: isLastPlayer && isButtonVisible ? `0 0 20px ${color}` : undefined, animation: isButtonVisible ? (isLastPlayer ? 'none' : 'shadow-pulse 2s infinite ease-in-out') : 'none' }}
-                        className={`relative z-20 w-full max-w-xs py-3 px-6 font-bold text-white transition-all duration-100 flex items-center justify-center gap-2 rounded-full overflow-hidden transform-gpu ${isLastPlayer ? 'active:scale-90' : 'active:scale-95'}`}
-                    >
-                        {isLastPlayer && (
-                            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden rounded-full">
-                                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite]" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)' }} />
-                            </div>
+            <div className="h-16 w-full flex items-center justify-center relative mt-4">
+                <button
+                    onPointerDown={(e) => { if (isButtonVisible) { e.preventDefault(); if (navigator.vibrate) navigator.vibrate(20); nextAction(totalViewTime.current); } }}
+                    disabled={!isButtonVisible}
+                    aria-hidden={!isButtonVisible}
+                    tabIndex={isButtonVisible ? 0 : -1}
+                    style={{ backgroundColor: color, opacity: isButtonVisible ? 1 : 0, transform: isButtonVisible ? 'scale(1)' : 'scale(0.95)', pointerEvents: isButtonVisible ? 'auto' : 'none', touchAction: 'manipulation', boxShadow: isLastPlayer && isButtonVisible ? `0 0 20px ${color}` : undefined, animation: isButtonVisible ? (isLastPlayer ? 'none' : 'shadow-pulse 2s infinite ease-in-out') : 'none' }}
+                    className={`relative z-20 w-full max-w-xs py-3 px-6 font-bold text-white transition-all duration-300 flex items-center justify-center gap-2 rounded-full overflow-hidden transform-gpu ${isLastPlayer ? 'active:scale-90' : 'active:scale-95'}`}
+                >
+                    {isLastPlayer && (
+                        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden rounded-full">
+                            <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite]" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)' }} />
+                        </div>
+                    )}
+                    <div className="absolute inset-[2px] rounded-full z-0" style={{ backgroundColor: color }} />
+                    <span className="relative z-10 tracking-widest">
+                        {isLastPlayer ? (isParty ? 'EMPEZAR EL BOTELLÓN' : 'EMPEZAR PARTIDA') : (
+                            isRenunciaPending ? 'CONTINUAR' : (isParty ? 'SIGUIENTE BORRACHO' : 'SIGUIENTE JUGADOR')
                         )}
-                        <div className="absolute inset-[2px] rounded-full z-0" style={{ backgroundColor: color }} />
-                        <span className="relative z-10 tracking-widest">
-                            {isLastPlayer ? (isParty ? 'EMPEZAR EL BOTELLÓN' : 'EMPEZAR PARTIDA') : (
-                                isRenunciaPending ? 'CONTINUAR' : (isParty ? 'SIGUIENTE BORRACHO' : 'SIGUIENTE JUGADOR')
-                            )}
-                        </span>
-                        {isLastPlayer ? <Play size={20} fill="currentColor" className="relative z-10"/> : <ArrowRight size={20} className="relative z-10"/>}
-                    </button>
-                </div>
-            )}
+                    </span>
+                    {isLastPlayer ? <Play size={20} fill="currentColor" className="relative z-10"/> : <ArrowRight size={20} className="relative z-10"/>}
+                </button>
+            </div>
         </div>
     );
 };
