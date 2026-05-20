@@ -89,7 +89,7 @@ export const generateGameData = (config: GameConfig): {
     if (!isTrollEvent && paranoiaLevel > 70 && coolingRounds === 0) {
         const roll = Math.random() * 100;
         
-        if (roll < 40) {
+        if (roll < 25) {
             breakProtocolType = 'leteo';
             const hasLinearPattern = detectLinearPattern(pastImpostorIds, players);
             if (paranoiaLevel > 90) {
@@ -102,10 +102,10 @@ export const generateGameData = (config: GameConfig): {
                 leteoGrade = 1;
                 entropyLevel = 0.3;
             }
-        } else if (useTrollMode && roll < 65) {
+        } else if (useTrollMode && roll < 35) {
             breakProtocolType = 'pandora';
             isTrollEvent = true;
-        } else if (roll < 90) {
+        } else if (roll < (useTrollMode ? 45 : 35)) {
             breakProtocolType = 'mirror';
         } else {
             breakProtocolType = 'blind';
