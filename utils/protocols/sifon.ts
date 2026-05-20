@@ -77,6 +77,8 @@ export const applySifonDecision = (
 
         updatedSifonData.leakedHints = [hint1, hint2];
 
+        const siphonerName = gameData.find(p => p.id === sifonData.activePlayerId)?.name || 'Desconocido';
+
         updatedGameData = updatedGameData.map((p, index) => {
             if (p.id === sifonData.activePlayerId) {
                 return { ...p, word: `PISTAS: 1) ${hint1} | 2) ${hint2}`, isSiphoner: true };
@@ -84,7 +86,7 @@ export const applySifonDecision = (
             if (p.isImp) {
                 // Aliado impostor: queda sifonado (a ciegas)
                 updatedSifonData.siphonedImpostorsIds.push(p.id);
-                return { ...p, word: 'SIN PISTA \u2014 SIFONADO', isSiphoned: true };
+                return { ...p, word: `Tu compañero impostor ${siphonerName} te ha robado la pista`, isSiphoned: true };
             }
             if (!p.isImp && index > activeImpIndex) {
                 // Civil que aún no ha visto su carta: recibe la filtración

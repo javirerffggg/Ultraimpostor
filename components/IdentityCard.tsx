@@ -22,6 +22,7 @@ interface Props {
     impostorEffectsEnabled?: boolean;
     revealSpeed?: 'low' | 'medium' | 'high';
     isArchitectLoading?: boolean;
+    specialHoldType?: 'architect' | 'sifon' | 'renuncia' | 'prisma';
 }
 
 export const IdentityCard: React.FC<Props> = ({ 
@@ -40,7 +41,8 @@ export const IdentityCard: React.FC<Props> = ({
     isRenunciaPending,
     impostorEffectsEnabled = true,
     revealSpeed = 'medium',
-    isArchitectLoading = false
+    isArchitectLoading = false,
+    specialHoldType
 }) => {
     const [isHolding, setIsHolding] = useState(false);
     const [hasInteracted, setHasInteracted] = useState(false);
@@ -66,6 +68,10 @@ export const IdentityCard: React.FC<Props> = ({
 
     // --- DETERMINAR COLOR DEL ROL ---
     const getRoleColor = () => {
+        if (specialHoldType === 'architect') return '#10b981'; // Verde Arquitecto
+        if (specialHoldType === 'sifon') return '#06b6d4'; // Cian Sifón
+        if (specialHoldType === 'renuncia') return '#f59e0b'; // Ámbar Renuncia
+        if (specialHoldType === 'prisma') return '#d946ef'; // Fucsia Prisma
         if (player.isImp) return '#ef4444'; // Rojo Impostor
         if (player.isOracle) return '#8b5cf6'; // Violeta Oráculo
         if (player.isAlcalde) return '#FFD700'; // Dorado Alcalde
@@ -357,10 +363,11 @@ export const IdentityCard: React.FC<Props> = ({
                                 onOracleOptionSelect={handleOracleOptionSelect} 
                                 isHolding={isHolding}
                                 isArchitectLoading={isArchitectLoading}
+                                specialHoldType={specialHoldType}
                             />
                         )}
                     </div>
-                    {isHolding && !oracleSelectionMade && !player.isArchitect && (
+                    {isHolding && !oracleSelectionMade && !player.isArchitect && !specialHoldType && (
                         <div className="absolute bottom-8 left-0 w-full flex justify-center opacity-30">
                             <p style={{ color: isOracleLockedOpen ? '#a78bfa' : theme.sub }} className="text-[9px] uppercase tracking-widest text-center flex flex-col items-center gap-1">
                                 {isOracleLockedOpen ? <><MousePointerClick size={12} className="animate-bounce" /> Selecciona una opción</> : "Soltar"}

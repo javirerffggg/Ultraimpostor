@@ -1,228 +1,183 @@
 import React, { useState } from 'react';
 import { GamePlayer, ThemeConfig, SifonDecision } from '../types';
-import { Network, Ghost, ShieldCheck, Zap } from 'lucide-react';
+import { Network, Ghost, ShieldCheck, Zap, Check } from 'lucide-react';
 
 interface Props {
     player: GamePlayer;
     theme: ThemeConfig;
+    impostorCount: number;
     onDecision: (decision: SifonDecision) => void;
 }
 
-/**
- * SifonDecisionView
- * Intercepta la pantalla cuando el impostor activo tiene el Sifón pendiente.
- * Estética: cian/violeta tecnológico sobre negro, glassmorphism por capas.
- */
-export const SifonDecisionView: React.FC<Props> = ({ player, theme, onDecision }) => {
+export const SifonDecisionView: React.FC<Props> = ({ player, theme, impostorCount, onDecision }) => {
     const [selected, setSelected] = useState<SifonDecision | null>(null);
 
-    const handleSelect = (decision: SifonDecision) => {
-        if (selected !== null) return; // evitar doble-tap
-        setSelected(decision);
-        if (navigator.vibrate) navigator.vibrate([50, 100, 200]);
-        // Pequeño delay para que la animación de selección sea visible
-        setTimeout(() => onDecision(decision), 900);
+    const handleConfirm = () => {
+        if (!selected) return;
+        if (navigator.vibrate) navigator.vibrate([30, 50]);
+        onDecision(selected);
     };
 
+    const isOnlyOneOtherImpostor = impostorCount <= 2;
+    const sifonTitle = isOnlyOneOtherImpostor ? "Robar pista al otro impostor" : "Robar pista a los otros impostores";
+    const sifonDesc = isOnlyOneOtherImpostor
+        ? "Recibes 2 pistas pero tu compañero impostor no recibirá ninguna y los civiles conocerán las pistas."
+        : "Recibes 2 pistas pero tus compañeros impostores no recibirán ninguna y los civiles conocerán las pistas.";
+
+    const confirmText = selected === 'sifon' ? 'Confirmar y ver pistas' :
+                        selected === 'silence' ? 'Confirmar y ver tu tarjeta' :
+                        'Confirmar y pasar al siguiente jugador';
+
     return (
-        <div
-            className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-6 animate-in fade-in duration-500"
-            style={{
-                background: 'rgba(0,0,0,0.92)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-            }}
-        >
-            {/* Fondo etéreo cian/violeta */}
-            <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                    background: 'radial-gradient(ellipse 70% 50% at 50% 20%, rgba(6,182,212,0.18) 0%, rgba(76,29,149,0.22) 55%, transparent 100%)',
-                    opacity: 0.9,
-                }}
-            />
-            {/* Ruido sutil de textura */}
-            <div
-                className="absolute inset-0 pointer-events-none opacity-[0.03]"
-                style={{
-                    backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
-                    backgroundSize: '180px 180px',
-                }}
-            />
+        <div className="flex flex-col h-full items-center justify-between p-6 pb-12 relative z-10 animate-in slide-in-from-bottom-4 duration-500 pt-[calc(2rem+env(safe-area-inset-top))]">
+            {/* Header */}
+            <div className="text-center w-full mt-4 flex flex-col items-center gap-1.5 animate-in slide-in-from-top duration-700">
+                <span className="text-xs font-black text-red-500 uppercase tracking-widest animate-pulse">
+                    Eres un Impostor
+                </span>
+                <span className="text-[10px] text-black font-bold uppercase tracking-wider max-w-[260px] leading-snug">
+                    Te ha tocado el Protocolo Sifón
+                </span>
+                <h3 className="text-2xl font-bold mt-4 mb-2 flex items-center gap-2 justify-center" style={{ color: theme.text }}>
+                    <Network size={22} className="text-cyan-400" />
+                    Protocolo Sifón
+                </h3>
+                <p style={{ color: theme.sub }} className="text-sm font-medium max-w-xs mx-auto leading-relaxed">
+                    Elige una opción y pasa el teléfono al siguiente jugador.
+                </p>
+            </div>
 
-            <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
-                {/* Icónico */}
-                <div className="relative mb-6 flex items-center justify-center">
-                    <div
-                        className="absolute w-20 h-20 rounded-full blur-2xl animate-pulse"
-                        style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.4), rgba(76,29,149,0.4))' }}
-                    />
-                    <Zap
-                        size={44}
-                        strokeWidth={1.5}
-                        style={{ color: '#67e8f9', filter: 'drop-shadow(0 0 12px rgba(6,182,212,0.8))' }}
-                    />
-                </div>
-
-                {/* Título */}
-                <h2
-                    className="text-3xl text-center mb-1"
+            {/* Options */}
+            <div className="w-full max-w-sm flex-1 flex flex-col justify-center gap-3 my-4">
+                {/* SIFON */}
+                <button
+                    onClick={() => setSelected('sifon')}
+                    className="group relative w-full p-5 rounded-2xl border active:scale-[0.98] transition-all duration-200 text-left overflow-hidden backdrop-blur-md"
                     style={{
-                        fontWeight: 100,
-                        color: '#cffafe',
-                        letterSpacing: '0.12em',
-                        textShadow: '0 0 24px rgba(6,182,212,0.5)',
-                        fontFamily: theme.font,
+                        borderWidth: selected === 'sifon' ? '2px' : '1px',
+                        borderColor: selected === 'sifon' ? '#06b6d4' : theme.border,
+                        backgroundColor: theme.cardBg,
+                        boxShadow: selected === 'sifon' 
+                            ? '0 0 20px rgba(6,182,212,0.3), inset 0 0 12px rgba(6,182,212,0.15)' 
+                            : '0 4px 12px rgba(0,0,0,0.05)'
                     }}
                 >
-                    PROTOCOLO SIFÓN
-                </h2>
-                <p
-                    className="text-[10px] text-center mb-2 uppercase tracking-[0.25em]"
-                    style={{ color: 'rgba(103,232,249,0.5)' }}
+                    <div className="flex justify-between items-start mb-1.5">
+                        <span style={{ color: selected === 'sifon' ? '#06b6d4' : theme.sub }} className="text-[10px] font-black uppercase tracking-[0.2em]">
+                            Consolidación Total
+                        </span>
+                        {selected === 'sifon' ? (
+                            <Check size={16} className="text-cyan-400 animate-in zoom-in duration-200" />
+                        ) : (
+                            <Network size={16} className="text-cyan-400 opacity-40 group-hover:opacity-100 transition-opacity" />
+                        )}
+                    </div>
+                    <div className="space-y-1">
+                        <h3 className="text-lg font-black uppercase tracking-tight" style={{ color: theme.text }}>
+                            {sifonTitle}
+                        </h3>
+                        <p className="text-[10px] leading-relaxed opacity-70" style={{ color: theme.sub }}>
+                            {sifonDesc}
+                        </p>
+                    </div>
+                </button>
+
+                {/* SILENCE */}
+                <button
+                    onClick={() => setSelected('silence')}
+                    className="group relative w-full p-5 rounded-2xl border active:scale-[0.98] transition-all duration-200 text-left overflow-hidden backdrop-blur-md"
+                    style={{
+                        borderWidth: selected === 'silence' ? '2px' : '1px',
+                        borderColor: selected === 'silence' ? 'rgba(156,163,175,0.8)' : theme.border,
+                        backgroundColor: theme.cardBg,
+                        boxShadow: selected === 'silence' 
+                            ? '0 0 20px rgba(156,163,175,0.25), inset 0 0 12px rgba(156,163,175,0.1)' 
+                            : '0 4px 12px rgba(0,0,0,0.05)'
+                    }}
                 >
-                    Consolidación de Datos • {player.name}
-                </p>
+                    <div className="flex justify-between items-start mb-1.5">
+                        <span style={{ color: selected === 'silence' ? 'rgba(156,163,175,0.9)' : theme.sub }} className="text-[10px] font-black uppercase tracking-[0.2em]">
+                            Silencio Absoluto
+                        </span>
+                        {selected === 'silence' ? (
+                            <Check size={16} className="text-gray-400 animate-in zoom-in duration-200" />
+                        ) : (
+                            <Ghost size={16} className="text-gray-400 opacity-40 group-hover:opacity-100 transition-opacity" />
+                        )}
+                    </div>
+                    <div className="space-y-1">
+                        <h3 className="text-lg font-black uppercase tracking-tight" style={{ color: theme.text }}>
+                            Silencio
+                        </h3>
+                        <p className="text-[10px] leading-relaxed opacity-70" style={{ color: theme.sub }}>
+                            Juegas sin ninguna pista (modo fantasma). Tus aliados impostores conservan sus pistas y no se ven afectados.
+                        </p>
+                    </div>
+                </button>
 
-                {/* Separador */}
-                <div
-                    className="w-24 h-px mb-8"
-                    style={{ background: 'linear-gradient(90deg, transparent, rgba(6,182,212,0.4), transparent)' }}
-                />
-
-                {/* OPCIONES */}
-                <div className="w-full space-y-3">
-
-                    {/* SIFON — Cian/Violeta */}
+                {/* INTEGRITY */}
+                {impostorCount > 2 && (
                     <button
-                        onClick={() => handleSelect('sifon')}
-                        disabled={selected !== null}
-                        className="w-full relative overflow-hidden rounded-2xl p-5 text-left transition-all duration-500"
+                        onClick={() => setSelected('integrity')}
+                        className="group relative w-full p-5 rounded-2xl border active:scale-[0.98] transition-all duration-200 text-left overflow-hidden backdrop-blur-md"
                         style={{
-                            border: selected === 'sifon'
-                                ? '1px solid rgba(6,182,212,0.9)'
-                                : '1px solid rgba(6,182,212,0.2)',
-                            background: selected === 'sifon'
-                                ? 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(76,29,149,0.25))'
-                                : 'rgba(0,0,0,0.4)',
-                            boxShadow: selected === 'sifon'
-                                ? '0 0 32px rgba(6,182,212,0.35), inset 0 0 20px rgba(6,182,212,0.08)'
-                                : 'none',
-                            transform: selected === 'sifon' ? 'scale(1.03)' : 'scale(1)',
-                            opacity: selected !== null && selected !== 'sifon' ? 0.4 : 1,
+                            borderWidth: selected === 'integrity' ? '2px' : '1px',
+                            borderColor: selected === 'integrity' ? theme.accent : theme.border,
+                            backgroundColor: theme.cardBg,
+                            boxShadow: selected === 'integrity' 
+                                ? `0 0 20px ${theme.accent}30, inset 0 0 12px ${theme.accent}15` 
+                                : '0 4px 12px rgba(0,0,0,0.05)'
                         }}
                     >
-                        <div className="flex items-start gap-4">
-                            <Network
-                                size={22}
-                                strokeWidth={1.5}
-                                style={{ color: selected === 'sifon' ? '#67e8f9' : 'rgba(6,182,212,0.6)', flexShrink: 0, marginTop: 2 }}
-                            />
-                            <div>
-                                <h3
-                                    className="font-bold uppercase tracking-widest text-xs mb-1.5"
-                                    style={{ color: selected === 'sifon' ? '#cffafe' : 'rgba(207,250,254,0.7)' }}
-                                >
-                                    Consolidación Total
-                                </h3>
-                                <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(103,232,249,0.55)' }}>
-                                    Recibes 2 pistas. Tus aliados quedan a ciegas.
-                                    Los civiles detectan la filtración.
-                                </p>
-                            </div>
+                        <div className="flex justify-between items-start mb-1.5">
+                            <span style={{ color: selected === 'integrity' ? theme.accent : theme.sub }} className="text-[10px] font-black uppercase tracking-[0.2em]">
+                                Integridad (Estándar)
+                            </span>
+                            {selected === 'integrity' ? (
+                                <Check size={16} style={{ color: theme.accent }} className="animate-in zoom-in duration-200" />
+                            ) : (
+                                <ShieldCheck size={16} style={{ color: theme.accent }} className="opacity-40 group-hover:opacity-100 transition-opacity" />
+                            )}
+                        </div>
+                        <div className="space-y-1">
+                            <h3 className="text-lg font-black uppercase tracking-tight" style={{ color: theme.text }}>
+                                Integridad
+                            </h3>
+                            <p className="text-[10px] leading-relaxed opacity-70" style={{ color: theme.sub }}>
+                                Conservas tu pista normal y el dilema se pasa al siguiente impostor elegible.
+                            </p>
                         </div>
                     </button>
+                )}
+            </div>
 
-                    {/* SILENCIO — Matte Black */}
+            {/* Controls */}
+            <div className="w-full max-w-sm space-y-3">
+                {/* Fixed height container to prevent layout shifting */}
+                <div className="h-14 w-full relative">
                     <button
-                        onClick={() => handleSelect('silence')}
-                        disabled={selected !== null}
-                        className="w-full rounded-2xl p-5 text-left transition-all duration-500"
+                        onClick={handleConfirm}
+                        disabled={!selected}
+                        aria-hidden={!selected}
+                        tabIndex={selected ? 0 : -1}
                         style={{
-                            border: selected === 'silence'
-                                ? '1px solid rgba(156,163,175,0.6)'
-                                : '1px solid rgba(75,85,99,0.3)',
-                            background: selected === 'silence'
-                                ? 'rgba(17,17,17,0.95)'
-                                : 'rgba(0,0,0,0.6)',
-                            boxShadow: selected === 'silence'
-                                ? '0 0 24px rgba(0,0,0,0.8)'
-                                : 'none',
-                            transform: selected === 'silence' ? 'scale(1.03)' : 'scale(1)',
-                            opacity: selected !== null && selected !== 'silence' ? 0.4 : 1,
+                            backgroundColor: theme.accent,
+                            boxShadow: selected ? `0 0 20px ${theme.accent}40` : 'none',
+                            opacity: selected ? 1 : 0,
+                            transform: selected ? 'scale(1)' : 'scale(0.95)',
+                            pointerEvents: selected ? 'auto' : 'none'
                         }}
+                        className="absolute inset-0 w-full h-full rounded-xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 text-white transition-all duration-300 transform-gpu active:scale-95"
                     >
-                        <div className="flex items-start gap-4">
-                            <Ghost
-                                size={22}
-                                strokeWidth={1.5}
-                                style={{ color: selected === 'silence' ? 'rgba(209,213,219,0.9)' : 'rgba(75,85,99,0.7)', flexShrink: 0, marginTop: 2 }}
-                            />
-                            <div>
-                                <h3
-                                    className="font-bold uppercase tracking-widest text-xs mb-1.5"
-                                    style={{ color: selected === 'silence' ? 'rgba(243,244,246,0.9)' : 'rgba(156,163,175,0.6)' }}
-                                >
-                                    Silencio Absoluto
-                                </h3>
-                                <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(107,114,128,0.8)' }}>
-                                    Sin pistas. Sin rastro.
-                                    Tus aliados conservan sus datos.
-                                </p>
-                            </div>
-                        </div>
-                    </button>
-
-                    {/* INTEGRIDAD — Glassmorphism */}
-                    <button
-                        onClick={() => handleSelect('integrity')}
-                        disabled={selected !== null}
-                        className="w-full rounded-2xl p-5 text-left transition-all duration-500"
-                        style={{
-                            border: selected === 'integrity'
-                                ? '1px solid rgba(255,255,255,0.45)'
-                                : '1px solid rgba(255,255,255,0.08)',
-                            background: selected === 'integrity'
-                                ? 'rgba(255,255,255,0.15)'
-                                : 'rgba(255,255,255,0.04)',
-                            backdropFilter: 'blur(12px)',
-                            WebkitBackdropFilter: 'blur(12px)',
-                            boxShadow: selected === 'integrity'
-                                ? '0 0 24px rgba(255,255,255,0.1)'
-                                : 'none',
-                            transform: selected === 'integrity' ? 'scale(1.03)' : 'scale(1)',
-                            opacity: selected !== null && selected !== 'integrity' ? 0.4 : 1,
-                        }}
-                    >
-                        <div className="flex items-start gap-4">
-                            <ShieldCheck
-                                size={22}
-                                strokeWidth={1.5}
-                                style={{ color: selected === 'integrity' ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.35)', flexShrink: 0, marginTop: 2 }}
-                            />
-                            <div>
-                                <h3
-                                    className="font-bold uppercase tracking-widest text-xs mb-1.5"
-                                    style={{ color: selected === 'integrity' ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.5)' }}
-                                >
-                                    Integridad (Estándar)
-                                </h3>
-                                <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                                    1 pista normal. El dilema se propaga
-                                    al siguiente aliado elegible.
-                                </p>
-                            </div>
-                        </div>
+                        {confirmText}
                     </button>
                 </div>
 
-                {/* Footer discreto */}
-                <p
-                    className="mt-8 text-[9px] text-center uppercase tracking-[0.3em]"
-                    style={{ color: 'rgba(103,232,249,0.25)' }}
-                >
-                    Solo tú puedes ver esta pantalla
-                </p>
+                <div className="flex items-start justify-center gap-1.5 opacity-60 px-2 text-center">
+                    <span className="text-[9px] uppercase tracking-wider w-full" style={{ color: theme.text }}>
+                        Solo tú puedes ver esta pantalla.
+                    </span>
+                </div>
             </div>
         </div>
     );

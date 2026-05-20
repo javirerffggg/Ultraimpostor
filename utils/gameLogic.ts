@@ -37,6 +37,7 @@ interface GameConfig {
         forceRenuncia?: boolean;
         forceSifon?: boolean;
         forcePrisma?: boolean;
+        forceBreakProtocol?: 'pandora' | 'mirror' | 'blind' | 'leteo' | null;
     }
     isPartyMode?: boolean;
     memoryModeConfig?: GameState['settings']['memoryModeConfig'];
@@ -86,29 +87,39 @@ export const generateGameData = (config: GameConfig): {
     let leteoGrade: 0 | 1 | 2 | 3 = 0;
     let entropyLevel = 0;
     
-    if (!isTrollEvent && paranoiaLevel > 90 && coolingRounds === 0) {
-        const roll = Math.random() * 100;
-        
-        if (roll < 25) {
-            breakProtocolType = 'leteo';
-            const hasLinearPattern = detectLinearPattern(pastImpostorIds, players);
-            if (paranoiaLevel > 90) {
-                leteoGrade = 3; 
+    if (!isTrollEvent && (debugOverrides?.forceBreakProtocol || (paranoiaLevel > 90 && coolingRounds === 0))) {
+        if (debugOverrides?.forceBreakProtocol) {
+            breakProtocolType = debugOverrides.forceBreakProtocol;
+            if (breakProtocolType === 'pandora') {
+                isTrollEvent = true;
+            } else if (breakProtocolType === 'leteo') {
+                leteoGrade = 3;
                 entropyLevel = 1.0;
-            } else if (hasLinearPattern) {
-                leteoGrade = 2;
-                entropyLevel = 0.6;
-            } else {
-                leteoGrade = 1;
-                entropyLevel = 0.3;
             }
-        } else if (useTrollMode && roll < 35) {
-            breakProtocolType = 'pandora';
-            isTrollEvent = true;
-        } else if (roll < (useTrollMode ? 45 : 35)) {
-            breakProtocolType = 'mirror';
         } else {
-            breakProtocolType = 'blind';
+            const roll = Math.random() * 100;
+            
+            if (roll < 25) {
+                breakProtocolType = 'leteo';
+                const hasLinearPattern = detectLinearPattern(pastImpostorIds, players);
+                if (paranoiaLevel > 90) {
+                    leteoGrade = 3; 
+                    entropyLevel = 1.0;
+                } else if (hasLinearPattern) {
+                    leteoGrade = 2;
+                    entropyLevel = 0.6;
+                } else {
+                    leteoGrade = 1;
+                    entropyLevel = 0.3;
+                }
+            } else if (useTrollMode && roll < 35) {
+                breakProtocolType = 'pandora';
+                isTrollEvent = true;
+            } else if (roll < (useTrollMode ? 45 : 35)) {
+                breakProtocolType = 'mirror';
+            } else {
+                breakProtocolType = 'blind';
+            }
         }
     }
 
@@ -428,11 +439,10 @@ export const generateGameData = (config: GameConfig): {
 
     if (debugOverrides?.forceArchitect) {
         if (players.length > 0) {
-            const primerJugador = players[0];
-            const primerJugadorKey = primerJugador.name.trim().toLowerCase();
-            if (!selectedKeys.includes(primerJugadorKey)) {
+            const firstCivil = players.find(p => !selectedKeys.includes(p.name.trim().toLowerCase()));
+            if (firstCivil) {
                 isArchitectTriggered = true;
-                architectId = primerJugador.id;
+                architectId = firstCivil.id;
             }
         }
     } else if (useArchitectMode && players.length > 0) {
@@ -600,6 +610,8 @@ export const generateGameData = (config: GameConfig): {
 
     if (shouldTryRenuncia) {
         const eligibleCandidates = selectedImpostors.filter(impostor => {
+            if (debugOverrides?.forceRenuncia) return true;
+            
             const impostorIndex = players.findIndex(p => p.id === impostor.id);
             if (impostorIndex === -1) return false;
             
@@ -631,7 +643,7 @@ export const generateGameData = (config: GameConfig): {
                     originalImpostorIds: selectedImpostors.map(imp => imp.id),
                     decision: 'pending',
                     timestamp: Date.now(),
-                    hasSeenInitialRole: false 
+                    hasSeenInitialRole: true // Skipped initial role view as per user request
                 };
             }
         }
@@ -645,6 +657,7 @@ export const generateGameData = (config: GameConfig): {
 
     const shouldTrySifon = (
         (useSifonMode || debugOverrides?.forceSifon) &&
+        useHintMode &&
         impostorCount >= 2 &&
         !isTrollEvent &&
         !renunciaData  // mutuamente excluyente con Renuncia
@@ -673,7 +686,7 @@ export const generateGameData = (config: GameConfig): {
         !isTrollEvent
     );
 
-    if (shouldTryPrisma && isEligibleForPrisma(gamePlayers)) {
+    if (shouldTryPrisma && (debugOverrides?.forcePrisma || isEligibleForPrisma(gamePlayers))) {
         const impostorPlayer = gamePlayers.find(p => p.isImp);
         if (impostorPlayer) {
             prismaData = {

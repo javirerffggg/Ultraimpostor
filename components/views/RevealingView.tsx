@@ -123,114 +123,7 @@ const RenunciaFlipGate: React.FC<{
     );
 };
 
-// ---------------------------------------------------------------------------
-// ARCHITECT BLOOM GATE
-// ---------------------------------------------------------------------------
-const ArchitectBloomGate: React.FC<{
-    front: React.ReactNode;
-    selection: React.ReactNode;
-    theme: ThemeConfig;
-}> = ({ front, selection, theme }) => {
-    const HOLD_DURATION = 1200;
-    const [bloomed, setBloomed] = useState(false);
-    const [blooming, setBlooming] = useState(false);
-    const [holdProgress, setHoldProgress] = useState(0);
-    const [isHolding, setIsHolding] = useState(false);
-    const holdStart = useRef<number | null>(null);
-    const rafRef = useRef<number | null>(null);
 
-    const startHold = (e: React.PointerEvent) => {
-        if (bloomed || blooming) return;
-        e.preventDefault();
-        holdStart.current = performance.now();
-        setIsHolding(true);
-        const tick = () => {
-            if (!holdStart.current) return;
-            const elapsed = performance.now() - holdStart.current;
-            const progress = Math.min(elapsed / HOLD_DURATION, 1);
-            setHoldProgress(progress);
-            if (progress < 1) {
-                rafRef.current = requestAnimationFrame(tick);
-            } else {
-                if (navigator.vibrate) navigator.vibrate([20, 40, 80, 40, 120]);
-                setIsHolding(false);
-                setHoldProgress(0);
-                setBlooming(true);
-                setTimeout(() => { setBlooming(false); setBloomed(true); }, 500);
-            }
-        };
-        rafRef.current = requestAnimationFrame(tick);
-    };
-
-    const cancelHold = () => {
-        if (bloomed || blooming) return;
-        holdStart.current = null;
-        setIsHolding(false);
-        setHoldProgress(0);
-        if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-
-    useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); }, []);
-
-    const RADIUS = 28;
-    const CIRCUM = 2 * Math.PI * RADIUS;
-
-    if (bloomed) {
-        return (
-            <div className="w-full h-full animate-in fade-in slide-in-from-bottom-4 duration-400">
-                {selection}
-            </div>
-        );
-    }
-
-    return (
-        <div className="relative w-full">
-            <div
-                className="relative w-full touch-none select-none"
-                style={{
-                    transform: blooming ? 'scale(1.12)' : isHolding ? `scale(${1 + holdProgress * 0.04})` : 'scale(1)',
-                    transition: blooming
-                        ? 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease-out, filter 0.3s ease-out'
-                        : 'transform 0.15s ease-out',
-                    opacity: blooming ? 0 : 1,
-                    filter: blooming
-                        ? `blur(8px) brightness(2)`
-                        : isHolding
-                            ? `brightness(${1 + holdProgress * 0.25}) drop-shadow(0 0 ${holdProgress * 24}px ${theme.accent})`
-                            : 'none',
-                }}
-                onPointerDown={startHold}
-                onPointerUp={cancelHold}
-                onPointerLeave={cancelHold}
-                onPointerCancel={cancelHold}
-                onContextMenu={e => e.preventDefault()}
-            >
-                {front}
-                {isHolding && holdProgress > 0 && (
-                    <div
-                        className="absolute inset-0 rounded-[3rem] pointer-events-none"
-                        style={{
-                            boxShadow: `0 0 ${holdProgress * 60}px ${holdProgress * 30}px ${theme.accent}${Math.round(holdProgress * 80).toString(16).padStart(2, '0')}`,
-                            opacity: holdProgress,
-                            transition: 'box-shadow 0.05s linear, opacity 0.05s linear',
-                        }}
-                    />
-                )}
-                {isHolding && holdProgress > 0 && (
-                    <div className="absolute bottom-3 right-3 z-50 pointer-events-none" style={{ opacity: Math.min(holdProgress * 4, 1) }}>
-                        <svg width={RADIUS * 2 + 8} height={RADIUS * 2 + 8} style={{ transform: 'rotate(-90deg)' }}>
-                            <circle cx={RADIUS + 4} cy={RADIUS + 4} r={RADIUS} fill="none" stroke={`${theme.accent}30`} strokeWidth={3} />
-                            <circle cx={RADIUS + 4} cy={RADIUS + 4} r={RADIUS} fill="none" stroke={theme.accent} strokeWidth={3} strokeLinecap="round"
-                                strokeDasharray={CIRCUM} strokeDashoffset={CIRCUM * (1 - holdProgress)}
-                                style={{ transition: 'stroke-dashoffset 0.05s linear' }}
-                            />
-                        </svg>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-};
 
 export const RevealingView: React.FC<Props> = React.memo(({
     gameState,
@@ -252,11 +145,23 @@ export const RevealingView: React.FC<Props> = React.memo(({
     const [hasSeenCurrentCard, setHasSeenCurrentCard] = useState(false);
     const [isArchitectTransitioning, setIsArchitectTransitioning] = useState(false);
     const [showArchitectSelection, setShowArchitectSelection] = useState(false);
+    const [isSifonTransitioning, setIsSifonTransitioning] = useState(false);
+    const [showSifonSelection, setShowSifonSelection] = useState(false);
+    const [isPrismaTransitioning, setIsPrismaTransitioning] = useState(false);
+    const [showPrismaSelection, setShowPrismaSelection] = useState(false);
+    const [isRenunciaTransitioning, setIsRenunciaTransitioning] = useState(false);
+    const [showRenunciaSelection, setShowRenunciaSelection] = useState(false);
 
     useEffect(() => {
         setHasSeenCurrentCard(false);
         setIsArchitectTransitioning(false);
         setShowArchitectSelection(false);
+        setIsSifonTransitioning(false);
+        setShowSifonSelection(false);
+        setIsPrismaTransitioning(false);
+        setShowPrismaSelection(false);
+        setIsRenunciaTransitioning(false);
+        setShowRenunciaSelection(false);
     }, [gameState.currentPlayerIndex]);
     const isParty = gameState.settings.partyMode;
     const isMemoryMode = gameState.settings.memoryModeConfig?.enabled;
@@ -306,6 +211,10 @@ export const RevealingView: React.FC<Props> = React.memo(({
         currentPlayer.isArchitect &&
         !!architectOptions;
 
+    const isSifonCard = sifonPending;
+    const isPrismaCard = prismaPending;
+    const isRenunciaCard = isRenunciaPhase2;
+
     const handleNext = (viewTime: number) => {
         if (isRenunciaPhase1) {
             onRenunciaRoleSeen();
@@ -324,14 +233,14 @@ export const RevealingView: React.FC<Props> = React.memo(({
     );
 
     // Tarjeta estándar (compartida por todas las gates)
-    const standardCard = isMemoryMode ? (
+    const standardCard = (isMemoryMode && !isArchitectCard && !isSifonCard && !isPrismaCard && !isRenunciaCard) ? (
         <MemoryRevealCard
             player={currentPlayer}
             memoryConfig={gameState.settings.memoryModeConfig}
             theme={theme}
             onMemorized={(time) => handleNext(time)}
         />
-    ) : gameState.settings.revealMethod === 'swipe' ? (
+    ) : (gameState.settings.revealMethod === 'swipe' && !isArchitectCard && !isSifonCard && !isPrismaCard && !isRenunciaCard) ? (
         <SwipeRevealCard
             player={currentPlayer}
             theme={theme}
@@ -355,12 +264,30 @@ export const RevealingView: React.FC<Props> = React.memo(({
                         setShowArchitectSelection(true);
                         setIsArchitectTransitioning(false);
                     }, 150);
+                } else if (isSifonCard) {
+                    setIsSifonTransitioning(true);
+                    setTimeout(() => {
+                        setShowSifonSelection(true);
+                        setIsSifonTransitioning(false);
+                    }, 150);
+                } else if (isPrismaCard) {
+                    setIsPrismaTransitioning(true);
+                    setTimeout(() => {
+                        setShowPrismaSelection(true);
+                        setIsPrismaTransitioning(false);
+                    }, 150);
+                } else if (isRenunciaCard) {
+                    setIsRenunciaTransitioning(true);
+                    setTimeout(() => {
+                        setShowRenunciaSelection(true);
+                        setIsRenunciaTransitioning(false);
+                    }, 150);
                 } else if (!currentPlayer.isOracle) {
                     setHasSeenCurrentCard(true);
                 }
             }}
             nextAction={(time) => { setHasSeenCurrentCard(false); handleNext(time); }}
-            readyForNext={isArchitectCard ? false : hasSeenCurrentCard}
+            readyForNext={(isArchitectCard || isSifonCard || isPrismaCard || isRenunciaCard) ? false : hasSeenCurrentCard}
             isLastPlayer={isLastPlayer}
             isParty={gameState.settings.partyMode}
             partyIntensity={gameState.partyState.intensity}
@@ -368,7 +295,13 @@ export const RevealingView: React.FC<Props> = React.memo(({
             onOracleConfirm={(hint) => { setHasSeenCurrentCard(true); onOracleConfirm(hint); }}
             impostorEffectsEnabled={gameState.settings.impostorEffects}
             revealSpeed={gameState.settings.holdRevealSpeed}
-            isArchitectLoading={isArchitectTransitioning}
+            isArchitectLoading={isArchitectTransitioning || isSifonTransitioning || isPrismaTransitioning || isRenunciaTransitioning}
+            specialHoldType={
+                isArchitectCard ? 'architect' :
+                isSifonCard ? 'sifon' :
+                isPrismaCard ? 'prisma' :
+                isRenunciaCard ? 'renuncia' : undefined
+            }
         />
     );
 
@@ -400,10 +333,13 @@ export const RevealingView: React.FC<Props> = React.memo(({
         />
     ) : null;
 
+    const impostorCount = gameState.gameData.filter(p => p.isImp).length;
+
     const sifonSelection = sifonPending ? (
         <SifonDecisionView
             player={currentPlayer}
             theme={theme}
+            impostorCount={impostorCount}
             onDecision={onSifonDecision}
         />
     ) : null;
@@ -495,24 +431,57 @@ export const RevealingView: React.FC<Props> = React.memo(({
                             {standardCard}
                         </div>
                     )
-                ) : isRenunciaPhase2 ? (
-                    <ArchitectBloomGate
-                        theme={theme}
-                        front={standardCard}
-                        selection={renunciaBack}
-                    />
-                ) : sifonPending && sifonSelection ? (
-                    <ArchitectBloomGate
-                        theme={theme}
-                        front={standardCard}
-                        selection={sifonSelection}
-                    />
-                ) : prismaPending && prismaSelection ? (
-                    <ArchitectBloomGate
-                        theme={theme}
-                        front={standardCard}
-                        selection={prismaSelection}
-                    />
+                ) : isSifonCard && sifonSelection ? (
+                    showSifonSelection ? (
+                        <div className="w-full h-full animate-in fade-in slide-in-from-bottom-4 duration-400">
+                            {sifonSelection}
+                        </div>
+                    ) : (
+                        <div
+                            className="w-full transition-all duration-150 ease-out"
+                            style={{
+                                opacity: isSifonTransitioning ? 0 : 1,
+                                transform: isSifonTransitioning ? 'scale(0.98)' : 'scale(1)',
+                                filter: isSifonTransitioning ? 'blur(2px)' : 'none'
+                            }}
+                        >
+                            {standardCard}
+                        </div>
+                    )
+                ) : isPrismaCard && prismaSelection ? (
+                    showPrismaSelection ? (
+                        <div className="w-full h-full animate-in fade-in slide-in-from-bottom-4 duration-400">
+                            {prismaSelection}
+                        </div>
+                    ) : (
+                        <div
+                            className="w-full transition-all duration-150 ease-out"
+                            style={{
+                                opacity: isPrismaTransitioning ? 0 : 1,
+                                transform: isPrismaTransitioning ? 'scale(0.98)' : 'scale(1)',
+                                filter: isPrismaTransitioning ? 'blur(2px)' : 'none'
+                            }}
+                        >
+                            {standardCard}
+                        </div>
+                    )
+                ) : isRenunciaCard && renunciaBack ? (
+                    showRenunciaSelection ? (
+                        <div className="w-full h-full animate-in fade-in slide-in-from-bottom-4 duration-400">
+                            {renunciaBack}
+                        </div>
+                    ) : (
+                        <div
+                            className="w-full transition-all duration-150 ease-out"
+                            style={{
+                                opacity: isRenunciaTransitioning ? 0 : 1,
+                                transform: isRenunciaTransitioning ? 'scale(0.98)' : 'scale(1)',
+                                filter: isRenunciaTransitioning ? 'blur(2px)' : 'none'
+                            }}
+                        >
+                            {standardCard}
+                        </div>
+                    )
                 ) : (
                     // Tarjeta estándar + badge de filtración si el civil recibió las pistas del sifonador
                     <div className="relative w-full">
@@ -532,7 +501,7 @@ export const RevealingView: React.FC<Props> = React.memo(({
                                         🚨 Filtración Interceptada
                                     </p>
                                     <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(207,250,254,0.8)' }}>
-                                        El Súpr-Infiltrado posee las pistas:{' '}
+                                        Uno de los impostores tiene estas pistas:{' '}
                                         <span className="font-bold" style={{ color: '#67e8f9' }}>
                                             {currentPlayer.leakedSifonHints!.join(' • ')}
                                         </span>
@@ -574,7 +543,11 @@ export const RevealingView: React.FC<Props> = React.memo(({
                 )}
             </div>
 
-            {!transitionName && !isRenunciaPhase2 && (!isArchitectCard || !showArchitectSelection) && !sifonPending && !prismaPending && (
+            {!transitionName && 
+             (!isArchitectCard || !showArchitectSelection) && 
+             (!isSifonCard || !showSifonSelection) && 
+             (!isPrismaCard || !showPrismaSelection) && 
+             (!isRenunciaCard || !showRenunciaSelection) && (
                 <div className="mt-auto mb-6 flex flex-col items-center gap-2.5 shrink-0">
                     <span
                         className="text-[9px] font-mono tracking-[0.3em] uppercase opacity-30"

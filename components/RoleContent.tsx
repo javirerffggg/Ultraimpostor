@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { GamePlayer, ThemeConfig, PartyIntensity } from '../types';
-import { Shield, Skull, Eye, Beer, Network, AlertCircle, Check, Crown, Siren, Smile, Gavel } from 'lucide-react';
+import { Shield, Skull, Eye, Beer, Network, AlertCircle, Check, Crown, Siren, Smile, Gavel, UserMinus, Sparkles } from 'lucide-react';
 import { RenunciaResultBadge } from './RenunciaResultBadge';
 
 interface RoleContentProps {
@@ -25,6 +25,7 @@ interface RoleContentProps {
     onOracleOptionSelect?: (hint: string) => void;
     isHolding?: boolean;
     isArchitectLoading?: boolean;
+    specialHoldType?: 'architect' | 'sifon' | 'renuncia' | 'prisma';
 }
 
 export const RoleContent: React.FC<RoleContentProps> = ({
@@ -38,7 +39,8 @@ export const RoleContent: React.FC<RoleContentProps> = ({
     isTransmitting,
     onOracleOptionSelect,
     isHolding,
-    isArchitectLoading
+    isArchitectLoading,
+    specialHoldType
 }) => {
     const getFontSize = (text: string) => {
         const len = text.length;
@@ -51,16 +53,47 @@ export const RoleContent: React.FC<RoleContentProps> = ({
         return '3.0rem';               
     };
 
-    if (player.isArchitect) {
+    if (player.isArchitect || specialHoldType) {
+        const type = specialHoldType || 'architect';
+        let colorClass = 'text-green-500';
+        let bgGlowClass = 'bg-green-600/30';
+        let borderGlowClass = 'border-green-500/30';
+        let auraClass = 'bg-green-500/20';
+        let dropShadowStyle = 'drop-shadow-[0_0_10px_rgba(34,197,94,0.8)]';
+        let Icon = Shield;
+
+        if (type === 'sifon') {
+            colorClass = 'text-cyan-400';
+            bgGlowClass = 'bg-cyan-600/30';
+            borderGlowClass = 'border-cyan-500/30';
+            auraClass = 'bg-cyan-500/20';
+            dropShadowStyle = 'drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]';
+            Icon = Network;
+        } else if (type === 'renuncia') {
+            colorClass = 'text-amber-500';
+            bgGlowClass = 'bg-amber-600/30';
+            borderGlowClass = 'border-amber-500/30';
+            auraClass = 'bg-amber-500/20';
+            dropShadowStyle = 'drop-shadow-[0_0_10px_rgba(245,158,11,0.8)]';
+            Icon = UserMinus;
+        } else if (type === 'prisma') {
+            colorClass = 'text-fuchsia-500';
+            bgGlowClass = 'bg-fuchsia-600/30';
+            borderGlowClass = 'border-fuchsia-500/30';
+            auraClass = 'bg-fuchsia-500/20';
+            dropShadowStyle = 'drop-shadow-[0_0_10px_rgba(217,70,239,0.8)]';
+            Icon = Sparkles;
+        }
+
         return (
             <div className="flex-1 flex flex-col items-center justify-center text-center select-none py-10 gap-4">
                 <div className="relative flex items-center justify-center mb-2">
-                    <div className="absolute w-28 h-28 bg-green-600/30 rounded-full blur-xl animate-pulse" />
-                    <div className="absolute w-24 h-24 rounded-full border border-green-500/30 border-dashed opacity-60 animate-[spin_12s_linear_infinite_reverse]" />
-                    <div className="absolute w-16 h-16 bg-green-500/20 rounded-full blur-md mix-blend-screen animate-imp-aura-pulse" />
-                    <Shield size={48} className="text-green-500 relative z-10 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)] animate-[bounce_2s_infinite]" />
+                    <div className={`absolute w-28 h-28 ${bgGlowClass} rounded-full blur-xl animate-pulse`} />
+                    <div className={`absolute w-24 h-24 rounded-full border ${borderGlowClass} border-dashed opacity-60 animate-[spin_12s_linear_infinite_reverse]`} />
+                    <div className={`absolute w-16 h-16 ${auraClass} rounded-full blur-md mix-blend-screen animate-imp-aura-pulse`} />
+                    <Icon size={48} className={`${colorClass} relative z-10 ${dropShadowStyle} animate-[bounce_2s_infinite]`} />
                 </div>
-                <h3 className="text-xl font-black text-green-500 uppercase tracking-widest text-center animate-pulse">
+                <h3 className={`text-xl font-black ${colorClass} uppercase tracking-widest text-center animate-pulse`}>
                     Suelta la tarjeta
                 </h3>
             </div>

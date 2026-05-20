@@ -234,6 +234,10 @@ const INITIAL_STATE: GameState = {
         isEnabled: false, 
         forceTroll: null, 
         forceArchitect: false,
+        forceRenuncia: false,
+        forceSifon: false,
+        forcePrisma: false,
+        forceBreakProtocol: null,
         godModeAssignments: {}
     },
     partyState: { intensity: 'aperitivo', consecutiveHardcoreRounds: 0, isHydrationLocked: false },
@@ -484,7 +488,10 @@ export const useGameState = () => {
                 debugOverrides: prev.debugState.isEnabled ? {
                     forceTroll: prev.debugState.forceTroll,
                     forceArchitect: prev.debugState.forceArchitect,
-                    forcePrisma: prev.debugState.forcePrisma
+                    forceRenuncia: prev.debugState.forceRenuncia,
+                    forceSifon: prev.debugState.forceSifon,
+                    forcePrisma: prev.debugState.forcePrisma,
+                    forceBreakProtocol: prev.debugState.forceBreakProtocol
                 } : undefined,
                 isPartyMode: prev.settings.partyMode,
                 memoryModeConfig: prev.settings.memoryModeConfig,

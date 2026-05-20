@@ -284,6 +284,9 @@ function App() {
                         onForceTroll={(scenario) => setGameState(prev => ({ ...prev, debugState: { ...prev.debugState, forceTroll: scenario } }))}
                         onForceArchitect={(force) => setGameState(prev => ({ ...prev, debugState: { ...prev.debugState, forceArchitect: force } }))}
                         onForceRenuncia={(force) => setGameState(prev => ({ ...prev, debugState: { ...prev.debugState, forceRenuncia: force } }))}
+                        onForceSifon={(force) => setGameState(prev => ({ ...prev, debugState: { ...prev.debugState, forceSifon: force } }))}
+                        onForcePrisma={(force) => setGameState(prev => ({ ...prev, debugState: { ...prev.debugState, forcePrisma: force } }))}
+                        onForceBreakProtocol={(protocol) => setGameState(prev => ({ ...prev, debugState: { ...prev.debugState, forceBreakProtocol: protocol } }))}
                         onExportState={() => {
                             const state = JSON.stringify(gameState, null, 2);
                             const blob = new Blob([state], { type: 'application/json' });

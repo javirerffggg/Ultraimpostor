@@ -304,6 +304,7 @@ export interface GameState {
         forceRenuncia?: boolean;
         forceSifon?: boolean;
         forcePrisma?: boolean;
+        forceBreakProtocol?: 'pandora' | 'mirror' | 'blind' | 'leteo' | null;
         godModeAssignments?: Record<string, string>;
         easterEggUnlocked?: boolean;
     };

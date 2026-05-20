@@ -18,6 +18,9 @@ interface Props {
     onForceTroll: (scenario: TrollScenario | null) => void;
     onForceArchitect: (force: boolean) => void;
     onForceRenuncia: (force: boolean) => void;
+    onForceSifon: (force: boolean) => void;
+    onForcePrisma: (force: boolean) => void;
+    onForceBreakProtocol: (protocol: 'pandora' | 'mirror' | 'blind' | 'leteo' | null) => void;
     onExportState: () => void;
     onImportState: (state: string) => void;
     onResetStats: () => void;
@@ -33,6 +36,9 @@ export const DebugConsole: React.FC<Props> = ({
     onForceTroll,
     onForceArchitect,
     onForceRenuncia,
+    onForceSifon,
+    onForcePrisma,
+    onForceBreakProtocol,
     onExportState,
     onImportState,
     onResetStats,
@@ -235,6 +241,9 @@ export const DebugConsole: React.FC<Props> = ({
                                 onForceTroll={onForceTroll}
                                 onForceArchitect={onForceArchitect}
                                 onForceRenuncia={onForceRenuncia}
+                                onForceSifon={onForceSifon}
+                                onForcePrisma={onForcePrisma}
+                                onForceBreakProtocol={onForceBreakProtocol}
                             />
                         )}
 
@@ -369,7 +378,10 @@ const OverrideTab: React.FC<{
     onForceTroll: (scenario: TrollScenario | null) => void;
     onForceArchitect: (force: boolean) => void;
     onForceRenuncia: (force: boolean) => void;
-}> = ({ gameState, theme, onForceTroll, onForceArchitect, onForceRenuncia }) => {
+    onForceSifon: (force: boolean) => void;
+    onForcePrisma: (force: boolean) => void;
+    onForceBreakProtocol: (protocol: 'pandora' | 'mirror' | 'blind' | 'leteo' | null) => void;
+}> = ({ gameState, theme, onForceTroll, onForceArchitect, onForceRenuncia, onForceSifon, onForcePrisma, onForceBreakProtocol }) => {
     
     const trollScenarios: { value: TrollScenario; label: string; desc: string }[] = [
         { value: 'espejo_total', label: '🪞 Espejo Total', desc: 'Todos impostores' },
@@ -436,6 +448,47 @@ const OverrideTab: React.FC<{
                         onClick={() => onForceRenuncia(!gameState.debugState.forceRenuncia)}
                         theme={theme}
                     />
+                    <ToggleButton
+                        label="🌊 Sifón"
+                        active={gameState.debugState.forceSifon || false}
+                        onClick={() => onForceSifon(!gameState.debugState.forceSifon)}
+                        theme={theme}
+                    />
+                    <ToggleButton
+                        label="🌈 Prisma"
+                        active={gameState.debugState.forcePrisma || false}
+                        onClick={() => onForcePrisma(!gameState.debugState.forcePrisma)}
+                        theme={theme}
+                    />
+                </div>
+            </div>
+
+            {/* Protocolos de Ruptura de Paranoia */}
+            <div>
+                <h3 className="text-sm font-black uppercase mb-2" style={{ color: theme.text }}>
+                    💥 Ruptura de Paranoia
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                    {(['leteo', 'pandora', 'mirror', 'blind'] as const).map(p => (
+                        <button
+                            key={p}
+                            onClick={() => onForceBreakProtocol(
+                                gameState.debugState.forceBreakProtocol === p ? null : p
+                            )}
+                            className="w-full text-center p-3 rounded-lg border transition-all hover:scale-[1.02] active:scale-[0.98] text-xs font-bold"
+                            style={{
+                                backgroundColor: gameState.debugState.forceBreakProtocol === p 
+                                    ? `${theme.accent}20` 
+                                    : theme.cardBg,
+                                borderColor: gameState.debugState.forceBreakProtocol === p
+                                    ? theme.accent
+                                    : theme.border,
+                                color: theme.text
+                            }}
+                        >
+                            <span className="capitalize">{p === 'pandora' ? 'Pandora (Troll)' : p}</span>
+                        </button>
+                    ))}
                 </div>
             </div>
 
