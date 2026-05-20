@@ -249,7 +249,6 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
     };
     
     const [isDecrypted, setIsDecrypted] = useState(false);
-    const [decryptProgress, setDecryptProgress] = useState(0);
     const [isHoldingDecrypt, setIsHoldingDecrypt] = useState(false);
     const [timerSeconds, setTimerSeconds] = useState(0);
     const frozenTimerRef = useRef(0);
@@ -258,6 +257,30 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
     const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
     const [showReReveal, setShowReReveal] = useState(false);
     const [profileViewPlayer, setProfileViewPlayer] = useState<string | null>(null);
+
+    const holdTimeoutRef = useRef<number | null>(null);
+
+    const handlePointerDown = (e: React.PointerEvent) => {
+        e.preventDefault();
+        if (isDecrypted) return;
+        setIsHoldingDecrypt(true);
+        if (navigator.vibrate) navigator.vibrate(15);
+
+        if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
+        holdTimeoutRef.current = window.setTimeout(() => {
+            setIsDecrypted(true);
+            if (navigator.vibrate) navigator.vibrate([50, 50, 200]);
+        }, 1500);
+    };
+
+    const handlePointerUpOrLeave = (e: React.PointerEvent) => {
+        e.preventDefault();
+        setIsHoldingDecrypt(false);
+        if (holdTimeoutRef.current) {
+            clearTimeout(holdTimeoutRef.current);
+            holdTimeoutRef.current = null;
+        }
+    };
 
     useEffect(() => {
         if (isDecrypted) return;
@@ -269,29 +292,6 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
         }, 1000);
         return () => clearInterval(interval);
     }, [isDecrypted]);
-
-    useEffect(() => {
-        let interval: number;
-        if (isHoldingDecrypt && !isDecrypted) {
-            if (navigator.vibrate) navigator.vibrate(20);
-            interval = window.setInterval(() => {
-                setDecryptProgress(prev => {
-                    const next = prev + 2.5;
-                    return next >= 100 ? 100 : next;
-                });
-            }, 16);
-        } else if (!isHoldingDecrypt && !isDecrypted) {
-            setDecryptProgress(prev => Math.max(0, prev - 8));
-        }
-        return () => clearInterval(interval);
-    }, [isHoldingDecrypt, isDecrypted]);
-
-    useEffect(() => {
-        if (decryptProgress >= 100 && !isDecrypted) {
-            setIsDecrypted(true);
-            if (navigator.vibrate) navigator.vibrate([50, 50, 200]);
-        }
-    }, [decryptProgress, isDecrypted]);
 
     const handleMenuClick = (e: React.MouseEvent | React.PointerEvent) => {
         e.preventDefault();
@@ -416,79 +416,89 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
 
                     <div className="w-full max-w-xs sm:max-w-sm pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
                         <button
-                            className="group relative w-full h-20 sm:h-24 rounded-[2rem] overflow-hidden touch-none select-none active:scale-[0.98] transition-transform"
-                            onPointerDown={(e) => { e.preventDefault(); setIsHoldingDecrypt(true); if (navigator.vibrate) navigator.vibrate([10, 20, 30]); }}
-                            onPointerUp={(e) => { e.preventDefault(); setIsHoldingDecrypt(false); }}
-                            onPointerLeave={() => setIsHoldingDecrypt(false)}
+                            className="group relative w-full h-20 sm:h-24 rounded-3xl overflow-hidden touch-none select-none active:scale-[0.98] transition-transform"
+                            onPointerDown={handlePointerDown}
+                            onPointerUp={handlePointerUpOrLeave}
+                            onPointerLeave={handlePointerUpOrLeave}
                             onContextMenu={(e) => e.preventDefault()}
                         >
+                            {/* Glassmorphic Background */}
                             <div 
                                 className="absolute inset-0 transition-all duration-300"
                                 style={{
-                                    backgroundColor: isHoldingDecrypt ? `${theme.accent}10` : 'rgba(0,0,0,0.3)',
+                                    backgroundColor: isHoldingDecrypt ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.02)',
                                     backdropFilter: 'blur(20px)',
-                                    border: `2px solid ${isHoldingDecrypt ? theme.accent : theme.border}`,
-                                    borderRadius: '2rem',
+                                    border: `1.5px solid ${isHoldingDecrypt ? theme.accent : `${theme.border}80`}`,
+                                    borderRadius: '24px',
                                     boxShadow: isHoldingDecrypt 
-                                        ? `0 0 40px ${theme.accent}30, inset 0 2px 10px rgba(0,0,0,0.3)`
-                                        : '0 10px 30px -10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)'
+                                        ? `0 0 50px -10px ${theme.accent}40, inset 0 0 12px ${theme.accent}15`
+                                        : '0 8px 32px -8px rgba(0,0,0,0.3)'
                                 }}
                             />
+
+                            {/* GPU-Accelerated Progress Bar */}
                             <div 
-                                className="absolute inset-0 transition-all duration-100 ease-linear"
+                                className="absolute inset-0 origin-left transition-transform"
                                 style={{
-                                    width: `${decryptProgress}%`,
-                                    background: `linear-gradient(90deg, ${theme.accent}60 0%, ${theme.accent}90 50%, ${theme.accent}60 100%)`,
-                                    backgroundSize: '200% 100%',
-                                    animation: isHoldingDecrypt ? 'shimmer-progress 1.5s linear infinite' : 'none',
-                                    borderRadius: '2rem'
+                                    transform: isHoldingDecrypt ? 'scaleX(1)' : 'scaleX(0)',
+                                    transition: isHoldingDecrypt ? 'transform 1500ms linear' : 'transform 300ms cubic-bezier(0.16, 1, 0.3, 1)',
+                                    background: `linear-gradient(90deg, ${theme.accent}30, ${theme.accent}80)`,
+                                    borderRadius: '24px'
                                 }}
                             />
-                            {!isHoldingDecrypt && (
-                                <div 
-                                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                    style={{
-                                        background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)`,
-                                        animation: 'slide-shine 2s ease-in-out infinite'
-                                    }}
-                                />
-                            )}
-                            <div className="relative z-10 h-full flex items-center px-4 sm:px-6">
-                                <div className={`relative flex items-center justify-center transition-all duration-300 ${isHoldingDecrypt ? 'scale-110' : 'scale-100'}`} style={{ width: '3.5rem', height: '3.5rem' }}>
+
+                            {/* Content Layer */}
+                            <div className="relative z-10 h-full flex items-center px-5 sm:px-6">
+                                <div className={`relative flex items-center justify-center transition-all duration-500 ${isHoldingDecrypt ? 'scale-105 rotate-90' : 'scale-100 rotate-0'}`} style={{ width: '3rem', height: '3rem' }}>
                                     <div 
-                                        className={`absolute inset-0 rounded-full border-2 transition-all duration-300 ${isHoldingDecrypt ? 'scale-125 opacity-0' : 'scale-100 opacity-100'}`}
-                                        style={{ borderColor: theme.accent, animation: isHoldingDecrypt ? 'ping 1s cubic-bezier(0,0,0.2,1) infinite' : 'none' }}
+                                        className="absolute inset-0 rounded-full border-2 transition-all duration-500"
+                                        style={{ 
+                                            borderColor: isHoldingDecrypt ? theme.accent : 'rgba(255,255,255,0.15)',
+                                            transform: isHoldingDecrypt ? 'scale(1.1)' : 'scale(1)'
+                                        }}
                                     />
-                                    <div className={`relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-300 ${isHoldingDecrypt ? 'bg-white text-black shadow-xl' : 'bg-white/10 text-white'}`}>
-                                        <Fingerprint size={24} className={isHoldingDecrypt ? 'text-black' : 'text-white'} />
+                                    <div 
+                                        className="relative z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
+                                        style={{
+                                            backgroundColor: isHoldingDecrypt ? 'white' : 'rgba(255,255,255,0.08)',
+                                            color: isHoldingDecrypt ? 'black' : 'white'
+                                        }}
+                                    >
+                                        <Sparkles size={18} className={isHoldingDecrypt ? 'text-black animate-pulse' : 'text-white'} />
                                     </div>
                                 </div>
-                                <div className="flex-1 ml-4 sm:ml-6 space-y-0.5 text-left">
-                                    <div className="flex items-baseline gap-2">
-                                        <span className={`font-black uppercase tracking-[0.2em] transition-all duration-300 ${isHoldingDecrypt ? 'text-base sm:text-lg' : 'text-sm sm:text-base'}`} style={{ color: theme.text, textShadow: isHoldingDecrypt ? `0 0 20px ${theme.accent}60` : 'none' }}>
-                                            {isHoldingDecrypt ? "ESCANEANDO" : "MANTENER"}
-                                        </span>
-                                        {isHoldingDecrypt && <span className="text-[10px] font-mono tabular-nums animate-pulse" style={{ color: theme.accent }}>{Math.floor(decryptProgress)}%</span>}
-                                    </div>
-                                    <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider transition-opacity duration-300" style={{ color: theme.sub, opacity: isHoldingDecrypt ? 0.9 : 0.6 }}>
-                                        {isHoldingDecrypt ? "Verificando identidad..." : "Para revelar resultados"}
-                                    </p>
+
+                                <div className="flex-1 ml-5 text-left">
+                                    <span 
+                                        className="block font-black uppercase tracking-[0.25em] text-xs sm:text-sm transition-all duration-300"
+                                        style={{ 
+                                            color: theme.text,
+                                            textShadow: isHoldingDecrypt ? `0 0 15px ${theme.accent}50` : 'none'
+                                        }}
+                                    >
+                                        {isHoldingDecrypt ? "Revelando..." : "Mantener pulsado"}
+                                    </span>
+                                    <span 
+                                        className="block text-[9px] uppercase tracking-wider mt-0.5 opacity-60 font-semibold"
+                                        style={{ color: theme.sub }}
+                                    >
+                                        {isHoldingDecrypt ? "Analizando registros..." : "Para ver resultados"}
+                                    </span>
                                 </div>
-                                <div className="ml-2">
-                                    {isHoldingDecrypt ? (
-                                        <div className="animate-spin w-5 h-5 rounded-full border-2 border-t-transparent" style={{ borderColor: theme.accent, borderTopColor: 'transparent' }} />
-                                    ) : (
-                                        <Lock size={18} style={{ color: theme.sub }} className="opacity-60" />
-                                    )}
+
+                                <div className="mr-2">
+                                    <ArrowRight 
+                                        size={18} 
+                                        style={{ color: theme.sub }} 
+                                        className={`transition-all duration-500 ${isHoldingDecrypt ? 'translate-x-1 opacity-100 text-white' : 'translate-x-0 opacity-40'}`} 
+                                    />
                                 </div>
                             </div>
                         </button>
-                        <div className={`mt-3 flex items-center justify-between px-4 transition-opacity duration-300 ${isHoldingDecrypt ? 'opacity-0' : 'opacity-50'}`}>
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_5px_#4ade80]" />
-                                <span className="text-[8px] font-mono uppercase tracking-widest" style={{ color: theme.sub }}>Sistema Seguro</span>
-                            </div>
-                            <span className="text-[8px] font-mono uppercase tracking-widest" style={{ color: theme.sub }}>AES-256 • v2.0</span>
+                        <div className="mt-3 text-center transition-opacity duration-300" style={{ opacity: isHoldingDecrypt ? 0 : 0.4 }}>
+                            <span className="text-[8px] font-mono uppercase tracking-widest" style={{ color: theme.sub }}>
+                                El veredicto de la ronda es confidencial
+                            </span>
                         </div>
                     </div>
                 </div>
