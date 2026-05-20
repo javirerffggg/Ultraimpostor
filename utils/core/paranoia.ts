@@ -49,8 +49,8 @@ export const calculateParanoiaScore = (
             sequentialHits++;
         }
     }
-    if (sequentialHits >= sequenceThreshold) score += 50; 
-    if (sequentialHits > sequenceThreshold) score += 50; 
+    if (sequentialHits >= sequenceThreshold) score += 20; 
+    if (sequentialHits > sequenceThreshold) score += 20; 
 
     const frequency: Record<string, number> = {};
     lastN.forEach(id => { frequency[id] = (frequency[id] || 0) + 1; });
@@ -59,8 +59,8 @@ export const calculateParanoiaScore = (
     const expectedFrequency = 5 / groupSize; 
     const normalizedFreq = maxFreq / expectedFrequency;
 
-    if (normalizedFreq >= 2.5) score += 60; 
-    else if (normalizedFreq >= 1.8) score += 20;
+    if (normalizedFreq >= 2.5) score += 15; 
+    else if (normalizedFreq >= 1.8) score += 5;
 
     if (currentRound > 8) score += (currentRound % 5) * 5;
 
