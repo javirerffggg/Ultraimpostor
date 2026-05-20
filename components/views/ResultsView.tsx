@@ -123,18 +123,20 @@ const ReRevealModal: React.FC<{
                             </span>
                         </div>
                     )}
-                    <button
-                        onClick={onClose}
-                        className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 active:scale-90 transition-all"
-                        style={{ color: theme.sub }}
-                        aria-label="Cerrar"
-                    >
-                        <X size={18} />
-                    </button>
+                    {!selectedPlayer && (
+                        <button
+                            onClick={onClose}
+                            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 active:scale-90 transition-all"
+                            style={{ color: theme.sub }}
+                            aria-label="Cerrar"
+                        >
+                            <X size={18} />
+                        </button>
+                    )}
                 </div>
 
                 {selectedPlayer ? (
-                    <div className="p-4 flex flex-col items-center gap-4">
+                    <div className="p-5 flex flex-col items-center gap-4">
                         <IdentityCard
                             player={selectedPlayer}
                             theme={theme}
@@ -152,11 +154,23 @@ const ReRevealModal: React.FC<{
                             revealSpeed={gameState.settings.holdRevealSpeed}
                         />
                         <p
-                            className="text-[10px] font-mono uppercase tracking-widest opacity-50 pb-2"
+                            className="text-[10px] font-mono uppercase tracking-widest opacity-50 text-center"
                             style={{ color: theme.sub }}
                         >
                             Solo lectura · No avanza turno
                         </p>
+                        <button
+                            onClick={onClose}
+                            className="w-full mt-1 py-3 px-6 rounded-2xl font-black uppercase tracking-wider text-xs transition-all duration-300 active:scale-95 border"
+                            style={{
+                                backgroundColor: theme.accent,
+                                color: '#ffffff',
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                boxShadow: `0 8px 30px -6px ${theme.accent}50`
+                            }}
+                        >
+                            Ya he revisado mi rol
+                        </button>
                     </div>
                 ) : (
                     <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
