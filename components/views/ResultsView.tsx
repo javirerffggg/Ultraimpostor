@@ -26,6 +26,33 @@ interface Props {
     getPlayerProgression?: (name: string) => PlayerProgression;
 }
 
+// --- SESSION ROUND COUNTER HELPER ---
+const getInitialSessionRoundCount = (): number => {
+    if (typeof window === 'undefined') return 0;
+    const sessionKey = 'impostor_session_initial_rounds';
+    const stored = sessionStorage.getItem(sessionKey);
+    if (stored !== null) {
+        return parseInt(stored, 10);
+    }
+    try {
+        const storedHistory = localStorage.getItem('impostor_game_history_v1');
+        if (storedHistory) {
+            const parsed = JSON.parse(storedHistory);
+            if (parsed && typeof parsed.roundCounter === 'number') {
+                const rounds = parsed.roundCounter;
+                sessionStorage.setItem(sessionKey, rounds.toString());
+                return rounds;
+            }
+        }
+    } catch (e) {
+        console.error(e);
+    }
+    sessionStorage.setItem(sessionKey, '0');
+    return 0;
+};
+
+const INITIAL_SESSION_ROUNDS = getInitialSessionRoundCount();
+
 // --- SUB-COMPONENT: DIGIT FLIP TIMER ---
 const DigitFlip: React.FC<{ value: number; theme: ThemeConfig }> = ({ value, theme }) => {
     const [displayValue, setDisplayValue] = useState(value);
@@ -361,7 +388,7 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
                         <div className="flex items-center gap-3">
                             <div className="flex flex-col">
                                 <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-60" style={{ color: theme.sub }}>
-                                    Ronda #{gameState.history.roundCounter}
+                                    Ronda #{Math.max(1, gameState.history.roundCounter - INITIAL_SESSION_ROUNDS)}
                                 </span>
                                 <span className="text-xs sm:text-sm font-bold" style={{ color: theme.text }}>
                                     {gameState.players.length} Jugadores
