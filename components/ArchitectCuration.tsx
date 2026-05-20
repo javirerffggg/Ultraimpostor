@@ -28,7 +28,7 @@ export const ArchitectCuration: React.FC<Props> = ({ architect, currentOptions, 
                 <span className="text-xs font-black text-green-500 uppercase tracking-widest animate-pulse">
                     Eres un civil
                 </span>
-                <span className="text-[10px] text-white/70 font-bold uppercase tracking-wider max-w-[260px] leading-snug">
+                <span className="text-[10px] text-black font-bold uppercase tracking-wider max-w-[260px] leading-snug">
                     Te ha tocado elegir la palabra de la ronda
                 </span>
                 <h3 className="text-2xl font-bold mt-4 mb-2" style={{ color: theme.text }}>Selección de Palabra</h3>
