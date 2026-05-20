@@ -287,14 +287,15 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                         left: '-6px',
                         width: 'calc(100% + 12px)',
                         height: 'calc(100% + 12px)',
-                        borderRadius: '2.5rem',
+                        borderRadius: theme.radius,
                         zIndex: 1,
                         transform: 'translateZ(0)'
                     }}
                 >
                     <div 
-                        className="absolute rounded-[2.5rem] border-[3px] overflow-hidden transition-all"
+                        className="absolute overflow-hidden transition-all border-[3px]"
                         style={{
+                            borderRadius: theme.radius,
                             inset: 0,
                             backgroundColor: theme.cardBg,
                             borderColor: isRevealed ? color : `${theme.border}80`,
@@ -329,7 +330,7 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                                 className="absolute pointer-events-none transition-opacity"
                                 style={{
                                     inset: '3px',
-                                    borderRadius: 'calc(2.5rem - 3px)',
+                                    borderRadius: theme.radius === '0rem' ? '0px' : `calc(${theme.radius} - 3px)`,
                                     backgroundColor: theme.cardBg,
                                     opacity: progress < 95 ? 1 : 0,
                                     backdropFilter: isDragging ? 'blur(20px)' : 'blur(40px)',
@@ -383,8 +384,9 @@ export const SwipeRevealCard: React.FC<SwipeRevealCardProps> = ({
                         onPointerMove={handlePointerMove}
                         onPointerUp={handlePointerUp}
                         onPointerCancel={handlePointerUp}
-                        className={`absolute inset-0 rounded-[2.5rem] border-2 touch-none select-none overflow-hidden transition-all ${isDragging ? 'duration-0' : 'duration-500'} ${isRevealed ? 'pointer-events-none opacity-0' : ''} ${isBouncing ? 'animate-bounce-short' : ''}`}
+                        className={`absolute inset-0 border-2 touch-none select-none overflow-hidden transition-all ${isDragging ? 'duration-0' : 'duration-500'} ${isRevealed ? 'pointer-events-none opacity-0' : ''} ${isBouncing ? 'animate-bounce-short' : ''}`}
                         style={{
+                            borderRadius: theme.radius,
                             backgroundColor: theme.cardBg,
                             borderColor: theme.accent,
                             boxShadow: isDragging

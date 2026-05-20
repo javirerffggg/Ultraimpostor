@@ -183,11 +183,15 @@ export const IdentityCard: React.FC<Props> = ({
         backgroundImage: `linear-gradient(135deg, ${theme.cardBg} 0%, ${activeColor}10 100%)`,
         border: `2px solid ${activeColor}`,
         boxShadow: insetShadow,
+        backgroundClip: 'padding-box',
+        WebkitBackgroundClip: 'padding-box',
     } : {
         backgroundImage: `linear-gradient(135deg, ${theme.cardBg} 0%, ${activeColor}15 100%)`,
         border: `2px solid ${activeColor}`,
         borderColor: activeColor, 
         boxShadow: insetShadow,
+        backgroundClip: 'padding-box',
+        WebkitBackgroundClip: 'padding-box',
     };
 
     const getTransitionDuration = () => {
@@ -270,19 +274,21 @@ export const IdentityCard: React.FC<Props> = ({
                     }}
                 >
                     <div
-                        className="absolute inset-0 rounded-[3rem] transition-opacity duration-300 ease-out"
+                        className="absolute inset-0 transition-opacity duration-300 ease-out"
                         style={{
                             boxShadow: idleShadowOuter,
                             opacity: isHolding ? 0 : 1,
-                            willChange: 'opacity'
+                            willChange: 'opacity',
+                            borderRadius: theme.radius
                         }}
                     />
                     <div
-                        className="absolute inset-0 rounded-[3rem] transition-opacity duration-300 ease-out"
+                        className="absolute inset-0 transition-opacity duration-300 ease-out"
                         style={{
                             boxShadow: revealShadowOuter,
                             opacity: isHolding ? 1 : 0,
-                            willChange: 'opacity'
+                            willChange: 'opacity',
+                            borderRadius: theme.radius
                         }}
                     />
                 </div>
