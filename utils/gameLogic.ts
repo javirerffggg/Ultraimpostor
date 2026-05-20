@@ -86,7 +86,7 @@ export const generateGameData = (config: GameConfig): {
     let leteoGrade: 0 | 1 | 2 | 3 = 0;
     let entropyLevel = 0;
     
-    if (!isTrollEvent && paranoiaLevel > 70 && coolingRounds === 0) {
+    if (!isTrollEvent && paranoiaLevel > 90 && coolingRounds === 0) {
         const roll = Math.random() * 100;
         
         if (roll < 25) {
