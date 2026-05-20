@@ -92,17 +92,17 @@ const ReRevealModal: React.FC<{
 
     return (
         <div
-            className="fixed inset-0 z-[200] flex flex-col items-center justify-center"
+            className="fixed inset-0 z-[200] flex flex-col items-center justify-center p-4"
             style={{ backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(20px)' }}
         >
             <div className="absolute inset-0" onClick={onClose} />
 
             <div
-                className="relative z-10 w-full max-w-sm mx-4 rounded-3xl overflow-hidden animate-in zoom-in-95 fade-in duration-300"
+                className="relative z-10 w-full max-w-sm rounded-3xl overflow-hidden animate-in zoom-in-95 fade-in duration-300 max-h-[90vh] flex flex-col"
                 style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}` }}
             >
                 <div
-                    className="flex items-center justify-between px-5 py-4 border-b"
+                    className="flex items-center justify-between px-5 py-4 border-b shrink-0"
                     style={{ borderColor: `${theme.border}50` }}
                 >
                     {selectedPlayer ? (
@@ -136,23 +136,25 @@ const ReRevealModal: React.FC<{
                 </div>
 
                 {selectedPlayer ? (
-                    <div className="p-5 flex flex-col items-center gap-4">
-                        <IdentityCard
-                            player={selectedPlayer}
-                            theme={theme}
-                            color={selectedPlayerColor}
-                            onRevealStart={() => {}}
-                            onRevealEnd={() => {}}
-                            nextAction={() => {}}
-                            readyForNext={false}
-                            isLastPlayer={false}
-                            isParty={false}
-                            partyIntensity="aperitivo"
-                            debugMode={false}
-                            onOracleConfirm={() => {}}
-                            impostorEffectsEnabled={gameState.settings.impostorEffects}
-                            revealSpeed={gameState.settings.holdRevealSpeed}
-                        />
+                    <div className="p-5 flex flex-col items-center gap-4 overflow-y-auto min-h-0">
+                        <div className="w-full max-w-[270px] mx-auto">
+                            <IdentityCard
+                                player={selectedPlayer}
+                                theme={theme}
+                                color={selectedPlayerColor}
+                                onRevealStart={() => {}}
+                                onRevealEnd={() => {}}
+                                nextAction={() => {}}
+                                readyForNext={false}
+                                isLastPlayer={false}
+                                isParty={false}
+                                partyIntensity="aperitivo"
+                                debugMode={false}
+                                onOracleConfirm={() => {}}
+                                impostorEffectsEnabled={gameState.settings.impostorEffects}
+                                revealSpeed={gameState.settings.holdRevealSpeed}
+                            />
+                        </div>
                         <p
                             className="text-[10px] font-mono uppercase tracking-widest opacity-50 text-center"
                             style={{ color: theme.sub }}
@@ -161,7 +163,7 @@ const ReRevealModal: React.FC<{
                         </p>
                         <button
                             onClick={onClose}
-                            className="w-full mt-1 py-3 px-6 rounded-2xl font-black uppercase tracking-wider text-xs transition-all duration-300 active:scale-95 border"
+                            className="w-full mt-1 py-3 px-6 rounded-2xl font-black uppercase tracking-wider text-xs transition-all duration-300 active:scale-95 border shrink-0"
                             style={{
                                 backgroundColor: theme.accent,
                                 color: '#ffffff',
