@@ -58,7 +58,8 @@ export const PrestigeSequence: React.FC<Props> = ({ playerName, newEra, prestige
                     className="text-7xl"
                     style={{
                         filter: `drop-shadow(0 0 40px ${msg.color})`,
-                        animation: 'float 3s ease-in-out infinite'
+                        animation: 'float 3s ease-in-out infinite',
+                        willChange: 'transform'
                     }}
                 >
                     {msg.icon}
@@ -97,19 +98,6 @@ export const PrestigeSequence: React.FC<Props> = ({ playerName, newEra, prestige
                     </span>
                 )}
             </div>
-
-            <style>{`
-                @keyframes float {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-12px); }
-                }
-                @keyframes animate-flash {
-                    0% { opacity: 0; }
-                    30% { opacity: 1; }
-                    100% { opacity: 0; }
-                }
-                .animate-flash { animation: animate-flash 800ms ease-out forwards; }
-            `}</style>
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, memo } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 import { ThemeConfig } from '../types';
 
 interface BackgroundProps {
@@ -11,21 +11,26 @@ interface BackgroundProps {
 
 export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }: BackgroundProps) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [mousePos, setMousePos] = useState({ x: 50, y: 50 }); // Percentage 0-100
+    const mousePosRef = useRef({ x: 50, y: 50 }); // Percentage 0-100
+    const isPageVisibleRef = useRef(true);
 
-    // MOUSE TRACKING FOR AURA MODE & PARTICLES
+    const blob1Ref = useRef<HTMLDivElement>(null);
+    const blob2Ref = useRef<HTMLDivElement>(null);
+    const blob3Ref = useRef<HTMLDivElement>(null);
+
+    // MOUSE TRACKING FOR AURA MODE & PARTICLES (Uses Ref to avoid React re-renders)
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             const x = (e.clientX / window.innerWidth) * 100;
             const y = (e.clientY / window.innerHeight) * 100;
-            setMousePos({ x, y });
+            mousePosRef.current = { x, y };
         };
 
         const handleTouchMove = (e: TouchEvent) => {
             const touch = e.touches[0];
             const x = (touch.clientX / window.innerWidth) * 100;
             const y = (touch.clientY / window.innerHeight) * 100;
-            setMousePos({ x, y });
+            mousePosRef.current = { x, y };
         };
 
         window.addEventListener('mousemove', handleMouseMove);
@@ -36,6 +41,56 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
             window.removeEventListener('touchmove', handleTouchMove);
         };
     }, []);
+
+    // PAGE VISIBILITY MONITOR (Pauses rendering tasks when page is hidden)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            const visible = document.visibilityState === 'visible';
+            isPageVisibleRef.current = visible;
+            if (blob3Ref.current) {
+                blob3Ref.current.style.animationPlayState = visible ? 'running' : 'paused';
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, []);
+
+    // RENDER AURA MODE (CSS BLOBS LOOP - direct DOM writes to skip React re-renders)
+    useEffect(() => {
+        if (theme.particleType !== 'aura') return;
+
+        let auraAnimId: number;
+        let lastX = -999;
+        let lastY = -999;
+
+        const updateBlobs = () => {
+            auraAnimId = requestAnimationFrame(updateBlobs);
+
+            if (!isPageVisibleRef.current) return;
+
+            const { x, y } = mousePosRef.current;
+            if (x === lastX && y === lastY) return;
+
+            lastX = x;
+            lastY = y;
+
+            if (blob1Ref.current) {
+                blob1Ref.current.style.transform = `translate3d(${x * 0.5}px, ${y * 0.5}px, 0)`;
+            }
+            if (blob2Ref.current) {
+                blob2Ref.current.style.transform = `translate3d(-${x * 0.3}px, -${y * 0.3}px, 0)`;
+            }
+        };
+
+        updateBlobs();
+
+        return () => {
+            cancelAnimationFrame(auraAnimId);
+        };
+    }, [theme.particleType]);
 
     // CANVAS ANIMATION (STANDARD & PREMIUM MODES)
     useEffect(() => {
@@ -181,14 +236,19 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                     this.opacity -= 0.002;
                     if (this.opacity <= 0) this.reset();
                 } else if (theme.particleType === 'plankton' || theme.particleType === 'stardust') {
-                    // Interaction: Repel from mouse/touch
-                    const dx = this.x - (mousePos.x * canvas!.width / 100);
-                    const dy = this.y - (mousePos.y * canvas!.height / 100);
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    if (dist < 150) {
-                        const force = (150 - dist) / 150;
-                        this.x += (dx / dist) * force * 5;
-                        this.y += (dy / dist) * force * 5;
+                    // Interaction: Repel from mouse/touch (Optimized distance comparison)
+                    const mPos = mousePosRef.current;
+                    const dx = this.x - (mPos.x * canvas!.width / 100);
+                    const dy = this.y - (mPos.y * canvas!.height / 100);
+                    const distSq = dx*dx + dy*dy;
+                    const radius = 150;
+                    if (distSq < radius * radius) {
+                        const dist = Math.sqrt(distSq);
+                        if (dist > 0) {
+                            const force = (radius - dist) / radius;
+                            this.x += (dx / dist) * force * 5;
+                            this.y += (dy / dist) * force * 5;
+                        }
                     }
                 }
 
@@ -296,8 +356,9 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
 
         const initParticles = () => {
             particles = [];
-            let count = theme.particleCount || (theme.particleType === 'circle' ? 60 : 100);
-            if (isTroll || isParty) count *= 2;
+            let count = theme.particleCount || (theme.particleType === 'circle' ? 60 : 80);
+            if (isTroll || isParty) count *= 1.5;
+            count = Math.min(Math.floor(count), 80); // Hard particle count cap for performance
             
             for (let i = 0; i < count; i++) {
                 particles.push(new Particle());
@@ -306,17 +367,30 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
 
         initParticles();
 
-        const render = () => {
-            time++;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
+        // 30 FPS Throttled RAF loop
+        const fps = 30;
+        const fpsInterval = 1000 / fps;
+        let lastDrawTime = performance.now();
+
+        const render = (now: number) => {
             animationFrameId = requestAnimationFrame(render);
+
+            if (!isPageVisibleRef.current) return;
+
+            const elapsed = now - lastDrawTime;
+            if (elapsed >= fpsInterval) {
+                lastDrawTime = now - (elapsed % fpsInterval);
+
+                time++;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+            }
         };
 
-        render();
+        render(performance.now());
 
         return () => {
             cancelAnimationFrame(animationFrameId);
@@ -339,9 +413,10 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                     }}
                 />
 
-                {/* BLOB 1 */}
+                {/* BLOB 1 (Reduced CSS Blur) */}
                 <div 
-                    className="absolute rounded-full blur-[100px] transition-all duration-1000 cubic-bezier(0.1, 0.7, 1.0, 0.1)"
+                    ref={blob1Ref}
+                    className="absolute rounded-full blur-[60px] transition-all duration-1000 cubic-bezier(0.1, 0.7, 1.0, 0.1)"
                     style={{
                         width: '50vw',
                         height: '50vw',
@@ -349,15 +424,15 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                         opacity: isLuminous ? 0.6 : 0.15,
                         top: '-10%',
                         left: '-10%',
-                        transform: `translate3d(${mousePos.x * 0.5}px, ${mousePos.y * 0.5}px, 0)`,
                         mixBlendMode: isLuminous ? 'multiply' : 'normal',
                         willChange: 'transform'
                     }}
                 />
 
-                {/* BLOB 2 */}
+                {/* BLOB 2 (Reduced CSS Blur) */}
                 <div 
-                    className="absolute rounded-full blur-[120px] transition-all duration-[2000ms] cubic-bezier(0.1, 0.7, 1.0, 0.1)"
+                    ref={blob2Ref}
+                    className="absolute rounded-full blur-[80px] transition-all duration-[2000ms] cubic-bezier(0.1, 0.7, 1.0, 0.1)"
                     style={{
                         width: '40vw',
                         height: '40vw',
@@ -365,15 +440,15 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                         opacity: isLuminous ? 0.5 : 0.12,
                         bottom: '10%',
                         right: '10%',
-                        transform: `translate3d(-${mousePos.x * 0.3}px, -${mousePos.y * 0.3}px, 0)`,
                         mixBlendMode: isLuminous ? 'multiply' : 'normal',
                         willChange: 'transform'
                     }}
                 />
 
-                {/* BLOB 3 */}
+                {/* BLOB 3 (Reduced CSS Blur & visibility check paused when hidden) */}
                 <div 
-                    className="absolute rounded-full blur-[150px] animate-[pulse_8s_infinite] transition-all duration-1000"
+                    ref={blob3Ref}
+                    className="absolute rounded-full blur-[100px] animate-[pulse_8s_infinite] transition-all duration-1000"
                     style={{
                         width: '60vw',
                         height: '60vw',

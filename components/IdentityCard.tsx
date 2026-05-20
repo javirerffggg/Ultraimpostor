@@ -178,13 +178,8 @@ export const IdentityCard: React.FC<Props> = ({
     const shadowStyle = isHolding ? revealShadow : idleShadow;
 
     const premiumStyle: React.CSSProperties = isPremium ? {
-        backgroundImage: `
-            linear-gradient(135deg, ${theme.cardBg}, ${activeColor}10), 
-            linear-gradient(135deg, ${activeColor}, ${activeColor}40 40%, transparent)
-        `,
-        border: '2px solid transparent',
-        backgroundClip: 'padding-box, border-box',
-        WebkitBackgroundClip: 'padding-box, border-box',
+        backgroundImage: `linear-gradient(135deg, ${theme.cardBg} 0%, ${activeColor}10 100%)`,
+        border: `2px solid ${activeColor}`,
         boxShadow: shadowStyle,
     } : {
         backgroundImage: `linear-gradient(135deg, ${theme.cardBg} 0%, ${activeColor}15 100%)`,
@@ -275,7 +270,7 @@ export const IdentityCard: React.FC<Props> = ({
                         </div>
                     )}
 
-                    <div className={`absolute inset-0 z-10 flex flex-col ${isHolding ? 'justify-start pt-6 pb-24' : 'justify-between py-8'} px-6 transition-none`}>
+                    <div className={`absolute inset-0 z-10 flex flex-col ${isHolding ? 'justify-start pt-8 pb-16' : 'justify-between py-8'} px-6 transition-none`}>
                         {!isHolding ? (
                             <>
                                 <div className="w-full text-center animate-sync">

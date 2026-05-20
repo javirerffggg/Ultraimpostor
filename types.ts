@@ -294,6 +294,8 @@ export interface GameState {
         usePrismaMode: boolean;
         /** Modo layout organizado por pestañas inferiores (estilo iOS) */
         useTabbedLayout: boolean;
+        /** Silenciar popups de subida de nivel y desbloqueos */
+        disableUnlockPopups: boolean;
     };
     debugState: {
         isEnabled: boolean;

@@ -44,10 +44,10 @@ export function useProgression(gameState: GameState) {
         setProgressions(updatedProgressions);
         saveAllProgressions(updatedProgressions);
 
-        if (allUnlocks.length > 0) {
+        if (allUnlocks.length > 0 && !gameState.settings.disableUnlockPopups) {
             setPendingUnlocks(allUnlocks);
         }
-    }, [gameState.phase, gameState.history.roundCounter]);
+    }, [gameState.phase, gameState.history.roundCounter, gameState.settings.disableUnlockPopups]);
 
     const dismissUnlocks = useCallback(() => {
         setPendingUnlocks([]);

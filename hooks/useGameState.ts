@@ -61,6 +61,7 @@ const DEFAULT_SETTINGS: GameState['settings'] = {
     useSifonMode: false,
     usePrismaMode: false,
     useTabbedLayout: false,
+    disableUnlockPopups: false,
 };
 
 const STORAGE_KEY_HISTORY = 'impostor_game_history_v2';
@@ -165,6 +166,7 @@ const getInitialSettings = (): GameState['settings'] => {
                 useSifonMode: parsed.useSifonMode ?? false,
                 usePrismaMode: parsed.usePrismaMode ?? false,
                 useTabbedLayout: parsed.useTabbedLayout ?? false,
+                disableUnlockPopups: parsed.disableUnlockPopups ?? false,
             };
         }
     } catch (e) {

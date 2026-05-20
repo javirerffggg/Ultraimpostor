@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { GameState, ThemeConfig, ThemeName, SettingsPreset } from '../../types';
-import { Users, X, Save, Check, Database, LayoutGrid, Settings, ChevronRight, ChevronDown, Lock, Droplets, ScanEye, Ghost, ShieldCheck, Network, Beer, Eye, Zap, UserMinus, Brain, Gavel, AlertTriangle, Gamepad2, Pencil, Pipette, Sparkles, Palette, Shield, ArrowUp, ArrowDown } from 'lucide-react';
+import { Users, X, Save, Check, Database, LayoutGrid, Settings, ChevronRight, ChevronDown, Lock, Droplets, ScanEye, Ghost, ShieldCheck, Network, Beer, Eye, Zap, UserMinus, Brain, Gavel, AlertTriangle, Gamepad2, Pencil, Pipette, Sparkles, Palette, Shield, ArrowUp, ArrowDown, Trophy } from 'lucide-react';
 import { GameModeWithTabs, GameModeItem } from '../GameModeWithTabs';
 import { CategorySelector } from '../CategorySelector';
 import { SettingsDrawer } from '../SettingsDrawer';
+import { StatsSection } from '../settings/StatsSection';
 import { getMemoryConfigForDifficulty } from '../../utils/memoryWordGenerator';
 import { getPlayerColor, getPlayerInitials } from '../../utils/playerHelpers';
 import { getVault } from '../../utils/core/vault';
@@ -64,9 +65,10 @@ export const SetupView: React.FC<Props> = ({
     const [validationError, setValidationError] = useState<string | null>(null);
     const [showBank, setShowBank] = useState(false);
     const [isEditingPlayers, setIsEditingPlayers] = useState(false);
+    const [showProgressionModal, setShowProgressionModal] = useState(false);
     // Mejora 4: mostrar botón Save expandido dentro del área de Database
     const [showSaveInBank, setShowSaveInBank] = useState(false);
-    const [activeTab, setActiveTab] = useState<'players' | 'protocols' | 'categories' | 'settings'>('players');
+    const [activeTab, setActiveTab] = useState<'players' | 'protocols' | 'progression' | 'categories' | 'settings'>('players');
 
     // Mejora UI Adaptativa: Apple Music-like scroll hide/show
     const [isCompactUI, setIsCompactUI] = useState(false);
@@ -778,6 +780,12 @@ export const SetupView: React.FC<Props> = ({
                         </div>
                     )}
 
+                    {activeTab === 'progression' && (
+                        <div className="animate-in fade-in duration-300">
+                            <StatsSection gameState={gameState} theme={theme} />
+                        </div>
+                    )}
+
                     {activeTab === 'settings' && (
                         <div className="animate-in fade-in duration-300">
                             <SettingsDrawer
@@ -889,6 +897,7 @@ export const SetupView: React.FC<Props> = ({
                         {[
                             { id: 'players', label: 'Jugadores', icon: <Users size={18} /> },
                             { id: 'protocols', label: 'Protocolos', icon: <Gamepad2 size={18} /> },
+                            { id: 'progression', label: 'Progreso', icon: <Trophy size={18} /> },
                             { id: 'categories', label: 'Categorías', icon: <LayoutGrid size={18} /> },
                             { id: 'settings', label: 'Ajustes', icon: <Settings size={18} /> }
                         ].map(tab => {
@@ -1442,6 +1451,27 @@ export const SetupView: React.FC<Props> = ({
                             </div>
                         </div>
                     </button>
+
+                    <button
+                        onClick={() => setShowProgressionModal(true)}
+                        className="col-span-2 relative p-4 rounded-[24px] border overflow-hidden group text-left transition-all duration-300 active:scale-95 hover:scale-[1.02]"
+                        style={{ backgroundColor: `${theme.cardBg}F5`, borderColor: theme.border, boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)', height: '88px' }}
+                    >
+                        <div className="relative z-10 flex flex-col justify-between h-full">
+                            <div className="flex items-center justify-between">
+                                <div className="p-2 rounded-xl w-fit" style={{ backgroundColor: `${theme.accent}15` }}>
+                                    <Trophy size={18} style={{ color: theme.accent }} />
+                                </div>
+                                <span className="text-[9px] font-mono opacity-60 uppercase" style={{ color: theme.sub }}>
+                                    Leaderboard & Logros
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-xs font-black uppercase tracking-wider block" style={{ color: theme.text }}>Progresión de Jugadores</span>
+                                <span className="text-[9px] opacity-60 font-medium" style={{ color: theme.sub }}>Ver leaderboard de agentes, estadísticas infinitum y perfiles de XP</span>
+                            </div>
+                        </div>
+                    </button>
                 </div>
             </div>
 
@@ -1511,6 +1541,48 @@ export const SetupView: React.FC<Props> = ({
                 onRemoveFromBank={onDeleteFromBank}
                 theme={theme}
             />
+
+            {/* FULLSCREEN PROGRESSION MODAL */}
+            {showProgressionModal && (
+                <div
+                    className="fixed inset-0 z-[200] flex flex-col animate-in slide-in-from-bottom duration-500 overflow-hidden"
+                    style={{ backgroundColor: theme.bg, color: theme.text }}
+                >
+                    {/* Header */}
+                    <div
+                        className="flex items-center justify-between px-6 py-4 pt-[calc(1rem+env(safe-area-inset-top))] border-b backdrop-blur-xl shrink-0"
+                        style={{
+                            borderColor: theme.border,
+                            backgroundColor: `${theme.cardBg}F5`
+                        }}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme.accent }}>
+                                <Trophy size={16} className="text-white" />
+                            </div>
+                            <h1 className="text-lg font-black uppercase tracking-wider">
+                                Progresión de Jugadores
+                            </h1>
+                        </div>
+                        <button
+                            onClick={() => setShowProgressionModal(false)}
+                            className="w-10 h-10 rounded-full flex items-center justify-center active:scale-95 hover:bg-white/10 border"
+                            style={{
+                                color: theme.text,
+                                backgroundColor: 'rgba(255,255,255,0.05)',
+                                borderColor: 'rgba(255,255,255,0.1)'
+                            }}
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 overflow-y-auto p-6 pb-24 no-scrollbar">
+                        <StatsSection gameState={gameState} theme={theme} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

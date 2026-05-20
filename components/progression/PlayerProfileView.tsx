@@ -67,10 +67,17 @@ export const PlayerProfileView: React.FC<Props> = ({ progression, playerName, th
         return medalStats.all.filter(m => m.tier === medalFilter);
     }, [medalStats, medalFilter]);
 
+    const isPerfMode = typeof document !== 'undefined' && document.documentElement.getAttribute('data-perf') === 'low';
+    const blurValue = isPerfMode ? '4px' : (theme.blur ? `${parseInt(theme.blur)}px` : '30px');
+
     return (
         <div
             className="fixed inset-0 z-[250] flex flex-col"
-            style={{ backgroundColor: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(30px)' }}
+            style={{ 
+                backgroundColor: 'rgba(0,0,0,0.92)', 
+                backdropFilter: `blur(${blurValue})`,
+                WebkitBackdropFilter: `blur(${blurValue})`
+            }}
         >
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-[calc(1rem+env(safe-area-inset-top))] pb-3">

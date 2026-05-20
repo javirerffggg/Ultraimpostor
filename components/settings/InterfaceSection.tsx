@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone } from 'lucide-react';
+import { Smartphone, BellOff } from 'lucide-react';
 import { ThemeConfig, GameState } from '../../types';
 import {
     SectionContainer, SectionHeader, ContentCard, SettingRow, PremiumToggle
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export const InterfaceSection: React.FC<Props & { searchQuery?: string }> = ({ gameState, theme, onUpdateSettings, searchQuery = '' }) => {
-    if (searchQuery && !'interfaz diseño pestañas tabs navegacion layout'.includes(searchQuery.toLowerCase())) return null;
+    if (searchQuery && !'interfaz diseño pestañas tabs navegacion layout progresión nivel popups'.includes(searchQuery.toLowerCase())) return null;
 
     return (
         <SectionContainer className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
@@ -32,6 +32,20 @@ export const InterfaceSection: React.FC<Props & { searchQuery?: string }> = ({ g
                         <PremiumToggle
                             active={!!gameState.settings.useTabbedLayout}
                             onClick={() => onUpdateSettings({ useTabbedLayout: !gameState.settings.useTabbedLayout })}
+                            theme={theme}
+                        />
+                    }
+                    theme={theme}
+                />
+
+                <SettingRow
+                    icon={<BellOff size={16} />}
+                    title="Silenciar Popups de Nivel"
+                    subtitle="Oculta los avisos flotantes de subida de nivel y desbloqueos de medallas/items"
+                    action={
+                        <PremiumToggle
+                            active={!!gameState.settings.disableUnlockPopups}
+                            onClick={() => onUpdateSettings({ disableUnlockPopups: !gameState.settings.disableUnlockPopups })}
                             theme={theme}
                         />
                     }

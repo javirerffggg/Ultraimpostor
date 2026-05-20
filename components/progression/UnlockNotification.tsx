@@ -86,12 +86,16 @@ export const UnlockNotification: React.FC<Props> = ({ unlocks, theme, onDismiss 
         );
     }
 
+    const isPerfMode = typeof document !== 'undefined' && document.documentElement.getAttribute('data-perf') === 'low';
+    const blurValue = isPerfMode ? '4px' : (theme.blur ? `${parseInt(theme.blur)}px` : '20px');
+
     return (
         <div
             className="fixed inset-0 z-[300] flex items-center justify-center"
             style={{
                 backgroundColor: 'rgba(0,0,0,0.75)',
-                backdropFilter: 'blur(20px)'
+                backdropFilter: `blur(${blurValue})`,
+                WebkitBackdropFilter: `blur(${blurValue})`
             }}
             onClick={handleNext}
         >
@@ -190,18 +194,6 @@ export const UnlockNotification: React.FC<Props> = ({ unlocks, theme, onDismiss 
                     Toca para {currentIndex < unlocks.length - 1 ? 'siguiente' : 'cerrar'}
                 </span>
             </div>
-
-            <style>{`
-                @keyframes fadeInScale {
-                    0% { opacity: 0; transform: scale(0.8) translateY(20px); }
-                    100% { opacity: 1; transform: scale(1) translateY(0); }
-                }
-                @keyframes bounceIn {
-                    0% { transform: scale(0); }
-                    50% { transform: scale(1.2); }
-                    100% { transform: scale(1); }
-                }
-            `}</style>
         </div>
     );
 };
