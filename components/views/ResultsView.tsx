@@ -164,7 +164,7 @@ const ReRevealModal: React.FC<{
 
                 {selectedPlayer ? (
                     <div className="p-5 flex flex-col items-center gap-4 overflow-y-auto min-h-0">
-                        <div className="w-full max-w-[270px] mx-auto">
+                        <div className="w-full max-w-[290px] mx-auto">
                             <IdentityCard
                                 player={selectedPlayer}
                                 theme={theme}

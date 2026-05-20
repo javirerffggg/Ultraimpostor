@@ -250,6 +250,14 @@ export const RevealingView: React.FC<Props> = React.memo(({
     transitionName
 }) => {
     const [hasSeenCurrentCard, setHasSeenCurrentCard] = useState(false);
+    const [isArchitectTransitioning, setIsArchitectTransitioning] = useState(false);
+    const [showArchitectSelection, setShowArchitectSelection] = useState(false);
+
+    useEffect(() => {
+        setHasSeenCurrentCard(false);
+        setIsArchitectTransitioning(false);
+        setShowArchitectSelection(false);
+    }, [gameState.currentPlayerIndex]);
     const isParty = gameState.settings.partyMode;
     const isMemoryMode = gameState.settings.memoryModeConfig?.enabled;
     const currentPlayer = gameState.gameData[gameState.currentPlayerIndex];
@@ -340,9 +348,19 @@ export const RevealingView: React.FC<Props> = React.memo(({
             theme={theme}
             color={currentPlayerColor}
             onRevealStart={() => {}}
-            onRevealEnd={() => { if (!currentPlayer.isOracle) setHasSeenCurrentCard(true); }}
+            onRevealEnd={() => {
+                if (isArchitectCard) {
+                    setIsArchitectTransitioning(true);
+                    setTimeout(() => {
+                        setShowArchitectSelection(true);
+                        setIsArchitectTransitioning(false);
+                    }, 400);
+                } else if (!currentPlayer.isOracle) {
+                    setHasSeenCurrentCard(true);
+                }
+            }}
             nextAction={(time) => { setHasSeenCurrentCard(false); handleNext(time); }}
-            readyForNext={hasSeenCurrentCard}
+            readyForNext={isArchitectCard ? false : hasSeenCurrentCard}
             isLastPlayer={isLastPlayer}
             isParty={gameState.settings.partyMode}
             partyIntensity={gameState.partyState.intensity}
@@ -350,6 +368,7 @@ export const RevealingView: React.FC<Props> = React.memo(({
             onOracleConfirm={(hint) => { setHasSeenCurrentCard(true); onOracleConfirm(hint); }}
             impostorEffectsEnabled={gameState.settings.impostorEffects}
             revealSpeed={gameState.settings.holdRevealSpeed}
+            isArchitectLoading={isArchitectTransitioning}
         />
     );
 
@@ -460,11 +479,22 @@ export const RevealingView: React.FC<Props> = React.memo(({
                         </div>
                     </div>
                 ) : isArchitectCard && architectSelection ? (
-                    <ArchitectBloomGate
-                        theme={theme}
-                        front={standardCard}
-                        selection={architectSelection}
-                    />
+                    showArchitectSelection ? (
+                        <div className="w-full h-full animate-in fade-in slide-in-from-bottom-4 duration-400">
+                            {architectSelection}
+                        </div>
+                    ) : (
+                        <div
+                            className="w-full transition-all duration-300 ease-out"
+                            style={{
+                                opacity: isArchitectTransitioning ? 0 : 1,
+                                transform: isArchitectTransitioning ? 'scale(0.95)' : 'scale(1)',
+                                filter: isArchitectTransitioning ? 'blur(4px)' : 'none'
+                            }}
+                        >
+                            {standardCard}
+                        </div>
+                    )
                 ) : isRenunciaPhase2 ? (
                     <ArchitectBloomGate
                         theme={theme}

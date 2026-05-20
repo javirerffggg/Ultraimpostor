@@ -20,7 +20,7 @@ export const ArchitectCuration: React.FC<Props> = ({ architect, currentOptions, 
             <div className="text-center w-full mt-4">
                 <h3 className="text-2xl font-bold mb-2" style={{ color: theme.text }}>Selección de Palabra</h3>
                 <p style={{ color: theme.sub }} className="text-sm font-medium max-w-xs mx-auto leading-relaxed">
-                    Eres un civil. Elige la palabra que se va a jugar en la ronda.
+                    Elige una opción y pasa el teléfono al siguiente jugador.
                 </p>
             </div>
 

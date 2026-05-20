@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { GamePlayer, ThemeConfig, PartyIntensity } from '../types';
-import { Fingerprint, Lock, Play, ArrowRight, Eye, MousePointerClick } from 'lucide-react';
+import { Fingerprint, Lock, Play, ArrowRight, Eye, MousePointerClick, RefreshCw } from 'lucide-react';
 import { CATEGORIES_DATA } from '../categories';
 import { RoleContent } from './RoleContent';
 import { revealImpostorEffect } from '../utils/effects';
@@ -21,6 +21,7 @@ interface Props {
     isRenunciaPending?: boolean;
     impostorEffectsEnabled?: boolean;
     revealSpeed?: 'low' | 'medium' | 'high';
+    isArchitectLoading?: boolean;
 }
 
 export const IdentityCard: React.FC<Props> = ({ 
@@ -38,7 +39,8 @@ export const IdentityCard: React.FC<Props> = ({
     onOracleConfirm,
     isRenunciaPending,
     impostorEffectsEnabled = true,
-    revealSpeed = 'medium'
+    revealSpeed = 'medium',
+    isArchitectLoading = false
 }) => {
     const [isHolding, setIsHolding] = useState(false);
     const [hasInteracted, setHasInteracted] = useState(false);
@@ -270,16 +272,20 @@ export const IdentityCard: React.FC<Props> = ({
                         </div>
                     )}
 
-                    <div className={`absolute inset-0 z-10 flex flex-col ${isHolding ? 'justify-start pt-8 pb-16' : 'justify-between py-8'} px-6 transition-none`}>
+                    <div className={`absolute inset-0 z-10 flex flex-col ${isHolding ? 'justify-start pt-8 pb-12' : 'justify-between py-8'} px-6 transition-none`}>
                         {!isHolding ? (
                             <>
                                 <div className="w-full text-center animate-sync">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ backgroundImage: `linear-gradient(to right, ${theme.sub}, ${theme.text}, ${theme.sub})`, backgroundSize: '100% auto', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', color: theme.sub }}>IDENTIDAD CLASIFICADA</h3>
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ backgroundImage: `linear-gradient(to right, ${theme.sub}, ${theme.text}, ${theme.sub})`, backgroundSize: '100% auto', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', color: theme.sub }}>
+                                        {isArchitectLoading ? 'Cargando...' : 'IDENTIDAD CLASIFICADA'}
+                                    </h3>
                                 </div>
                                 <div className="flex-1 flex items-center justify-center animate-sync">
                                     <div className="relative">
                                         <div className="absolute inset-0 bg-white/10 blur-2xl rounded-full transform scale-150" />
-                                        {player.isOracle && readyForNext ? (
+                                        {isArchitectLoading ? (
+                                            <RefreshCw size={48} strokeWidth={1.5} className="text-white animate-spin" />
+                                        ) : player.isOracle && readyForNext ? (
                                              <div className="relative">
                                                 <div className="absolute inset-0 bg-violet-500/50 blur-xl animate-pulse" />
                                                 <Eye size={48} className="text-violet-400 relative z-10" />
@@ -288,10 +294,14 @@ export const IdentityCard: React.FC<Props> = ({
                                     </div>
                                 </div>
                                 <div className="flex-1 flex flex-col items-center justify-end gap-4 animate-sync">
-                                    <div className="w-20 h-20 rounded-full border-2 flex items-center justify-center transition-colors duration-300 backdrop-blur-sm bg-black/10" style={{ borderColor: `${color}60` }}>
-                                        <Fingerprint size={40} color={color} className="opacity-80" />
-                                    </div>
-                                    <p style={{ color: theme.sub }} className="text-[9px] font-black tracking-widest uppercase opacity-70">Mantener pulsado</p>
+                                    {!isArchitectLoading && (
+                                        <>
+                                            <div className="w-20 h-20 rounded-full border-2 flex items-center justify-center transition-colors duration-300 backdrop-blur-sm bg-black/10" style={{ borderColor: `${color}60` }}>
+                                                <Fingerprint size={40} color={color} className="opacity-80" />
+                                            </div>
+                                            <p style={{ color: theme.sub }} className="text-[9px] font-black tracking-widest uppercase opacity-70">Mantener pulsado</p>
+                                        </>
+                                    )}
                                 </div>
                             </>
                         ) : (
