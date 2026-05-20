@@ -355,10 +355,12 @@ export const IdentityCard: React.FC<Props> = ({
                                 oracleOptions={oracleOptions} 
                                 isTransmitting={isTransmitting} 
                                 onOracleOptionSelect={handleOracleOptionSelect} 
+                                isHolding={isHolding}
+                                isArchitectLoading={isArchitectLoading}
                             />
                         )}
                     </div>
-                    {isHolding && !oracleSelectionMade && (
+                    {isHolding && !oracleSelectionMade && !player.isArchitect && (
                         <div className="absolute bottom-8 left-0 w-full flex justify-center opacity-30">
                             <p style={{ color: isOracleLockedOpen ? '#a78bfa' : theme.sub }} className="text-[9px] uppercase tracking-widest text-center flex flex-col items-center gap-1">
                                 {isOracleLockedOpen ? <><MousePointerClick size={12} className="animate-bounce" /> Selecciona una opción</> : "Soltar"}

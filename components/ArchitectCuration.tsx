@@ -24,8 +24,14 @@ export const ArchitectCuration: React.FC<Props> = ({ architect, currentOptions, 
     return (
         <div className="flex flex-col h-full items-center justify-between p-6 pb-12 relative z-10 animate-in slide-in-from-bottom-4 duration-500 pt-[calc(2rem+env(safe-area-inset-top))]">
             {/* Header */}
-            <div className="text-center w-full mt-4">
-                <h3 className="text-2xl font-bold mb-2" style={{ color: theme.text }}>Selección de Palabra</h3>
+            <div className="text-center w-full mt-4 flex flex-col items-center gap-1.5">
+                <span className="text-xs font-black text-green-500 uppercase tracking-widest animate-pulse">
+                    Eres un civil
+                </span>
+                <span className="text-[10px] text-white/70 font-bold uppercase tracking-wider max-w-[260px] leading-snug">
+                    Te ha tocado elegir la palabra de la ronda
+                </span>
+                <h3 className="text-2xl font-bold mt-4 mb-2" style={{ color: theme.text }}>Selección de Palabra</h3>
                 <p style={{ color: theme.sub }} className="text-sm font-medium max-w-xs mx-auto leading-relaxed">
                     Elige una opción y pasa el teléfono al siguiente jugador.
                 </p>
@@ -81,18 +87,25 @@ export const ArchitectCuration: React.FC<Props> = ({ architect, currentOptions, 
 
             {/* Controls */}
             <div className="w-full max-w-sm space-y-3">
-                {selectedOption && (
+                {/* Fixed height container to prevent layout shifting */}
+                <div className="h-14 w-full relative">
                     <button
-                        onClick={() => onConfirm(selectedOption)}
+                        onClick={() => selectedOption && onConfirm(selectedOption)}
+                        disabled={!selectedOption}
+                        aria-hidden={!selectedOption}
+                        tabIndex={selectedOption ? 0 : -1}
                         style={{
                             backgroundColor: theme.accent,
-                            boxShadow: `0 0 20px ${theme.accent}40`,
+                            boxShadow: selectedOption ? `0 0 20px ${theme.accent}40` : 'none',
+                            opacity: selectedOption ? 1 : 0,
+                            transform: selectedOption ? 'scale(1)' : 'scale(0.95)',
+                            pointerEvents: selectedOption ? 'auto' : 'none'
                         }}
-                        className="w-full py-4 rounded-xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 text-white animate-in fade-in slide-in-from-bottom-2 duration-300 active:scale-95 transition-all"
+                        className="absolute inset-0 w-full h-full rounded-xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 text-white transition-all duration-300 transform-gpu active:scale-95"
                     >
                         Confirmar y pasar al siguiente jugador
                     </button>
-                )}
+                </div>
 
                 <div className="flex items-start justify-center gap-2 mb-2 opacity-70 px-2">
                     <EyeOff size={14} style={{ color: theme.text, flexShrink: 0, marginTop: 3 }} />

@@ -23,6 +23,8 @@ interface RoleContentProps {
     oracleOptions?: string[];
     isTransmitting?: boolean;
     onOracleOptionSelect?: (hint: string) => void;
+    isHolding?: boolean;
+    isArchitectLoading?: boolean;
 }
 
 export const RoleContent: React.FC<RoleContentProps> = ({
@@ -34,7 +36,9 @@ export const RoleContent: React.FC<RoleContentProps> = ({
     isOracleSelectionMade,
     oracleOptions,
     isTransmitting,
-    onOracleOptionSelect
+    onOracleOptionSelect,
+    isHolding,
+    isArchitectLoading
 }) => {
     const getFontSize = (text: string) => {
         const len = text.length;
@@ -46,6 +50,22 @@ export const RoleContent: React.FC<RoleContentProps> = ({
         if (len > 5)  return '2.4rem'; 
         return '3.0rem';               
     };
+
+    if (player.isArchitect) {
+        return (
+            <div className="flex-1 flex flex-col items-center justify-center text-center select-none py-10 gap-4">
+                <div className="relative flex items-center justify-center mb-2">
+                    <div className="absolute w-28 h-28 bg-green-600/30 rounded-full blur-xl animate-pulse" />
+                    <div className="absolute w-24 h-24 rounded-full border border-green-500/30 border-dashed opacity-60 animate-[spin_12s_linear_infinite_reverse]" />
+                    <div className="absolute w-16 h-16 bg-green-500/20 rounded-full blur-md mix-blend-screen animate-imp-aura-pulse" />
+                    <Shield size={48} className="text-green-500 relative z-10 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)] animate-[bounce_2s_infinite]" />
+                </div>
+                <h3 className="text-xl font-black text-green-500 uppercase tracking-widest text-center animate-pulse">
+                    Suelta la tarjeta
+                </h3>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col items-center h-full animate-in fade-in duration-200 relative">
