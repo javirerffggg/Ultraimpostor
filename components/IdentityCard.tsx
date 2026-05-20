@@ -175,19 +175,19 @@ export const IdentityCard: React.FC<Props> = ({
     const rotationOverride = isHolding && isParty && isHighIntensity ? Math.sin(Date.now() / 200) * 3 : 0;
     const isOracleLockedOpen = player.isOracle && !oracleSelectionMade && isHolding;
 
-    const idleShadow = `0 0 25px ${color}40, 0 0 50px ${color}20, inset 0 0 30px ${color}10`;
-    const revealShadow = `0 0 40px ${roleColor}, 0 0 80px ${roleColor}60, inset 0 0 40px ${roleColor}30`;
-    const shadowStyle = isHolding ? revealShadow : idleShadow;
+    const idleShadowOuter = `0 0 25px ${color}40, 0 0 50px ${color}20`;
+    const revealShadowOuter = `0 0 40px ${roleColor}, 0 0 80px ${roleColor}60`;
+    const insetShadow = isHolding ? `inset 0 0 40px ${roleColor}30` : `inset 0 0 30px ${color}10`;
 
     const premiumStyle: React.CSSProperties = isPremium ? {
         backgroundImage: `linear-gradient(135deg, ${theme.cardBg} 0%, ${activeColor}10 100%)`,
         border: `2px solid ${activeColor}`,
-        boxShadow: shadowStyle,
+        boxShadow: insetShadow,
     } : {
         backgroundImage: `linear-gradient(135deg, ${theme.cardBg} 0%, ${activeColor}15 100%)`,
         border: `2px solid ${activeColor}`,
         borderColor: activeColor, 
-        boxShadow: shadowStyle,
+        boxShadow: insetShadow,
     };
 
     const getTransitionDuration = () => {
@@ -197,6 +197,12 @@ export const IdentityCard: React.FC<Props> = ({
     };
     
     const transitionDuration = getTransitionDuration();
+
+    const currentTransition = isDragging
+        ? 'none'
+        : isHolding
+            ? 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)'
+            : `transform ${transitionDuration} cubic-bezier(0.175, 0.885, 0.32, 1.275)`;
 
     return (
         <div className="flex flex-col items-center gap-8 w-full max-w-sm z-10 relative">
@@ -252,8 +258,36 @@ export const IdentityCard: React.FC<Props> = ({
             </div>
 
             <div className="w-full aspect-[3/4] relative" style={{ animation: (!isHolding && !hasInteracted && !isDragging) ? 'breathe 4s ease-in-out infinite' : 'none', transition: 'transform 0.3s ease-out' }}>
-                <div className="absolute rounded-full pointer-events-none" style={{ width: '140%', height: '140%', top: '-20%', left: '-20%', filter: 'blur(60px)', background: `radial-gradient(circle, ${activeColor}50 0%, transparent 60%)`, zIndex: -1, transform: `translate3d(${dragPosition.x}px, ${dragPosition.y + (isHolding ? -40 : 0)}px, 0) rotate(${dragPosition.x * 0.05}deg)`, transition: isDragging ? 'none' : `transform ${transitionDuration} cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.5s ease`, opacity: 0.6, willChange: 'transform' }} />
-                <div ref={cardRef} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} onContextMenu={(e) => e.preventDefault()} style={{ ...premiumStyle, borderRadius: theme.radius, backdropFilter: theme.blur ? `blur(${theme.blur})` : 'blur(24px)', WebkitBackdropFilter: theme.blur ? `blur(${theme.blur})` : 'blur(24px)', transition: isDragging ? 'none' : `transform ${transitionDuration} cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease`, transform: `translate3d(${dragPosition.x}px, ${dragPosition.y + (isHolding ? -40 : 0)}px, 0) rotate(${dragPosition.x * 0.03 + rotationOverride}deg)`, animation: (isHolding && !player.isImp) ? 'reveal-pulse 2s infinite' : 'none', touchAction: 'none', cursor: isDragging ? 'grabbing' : 'grab', willChange: 'transform, box-shadow' } as React.CSSProperties} className={`w-full h-full relative overflow-hidden select-none touch-none group premium-border ${isHolding && player.isImp && impostorEffectsEnabled ? 'animate-impostor-shake' : ''}`}>
+                <div className="absolute rounded-full pointer-events-none" style={{ width: '140%', height: '140%', top: '-20%', left: '-20%', filter: 'blur(60px)', background: `radial-gradient(circle, ${activeColor}50 0%, transparent 60%)`, zIndex: -1, transform: `translate3d(${dragPosition.x}px, ${dragPosition.y + (isHolding ? -40 : 0)}px, 0) rotate(${dragPosition.x * 0.05}deg)`, transition: isDragging ? 'none' : `${currentTransition}, background 0.5s ease`, opacity: 0.6, willChange: 'transform' }} />
+                
+                {/* GPU-Accelerated Shadow Layers */}
+                <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                        transform: `translate3d(${dragPosition.x}px, ${dragPosition.y + (isHolding ? -40 : 0)}px, 0) scale(${isHolding ? 1.03 : 1}) rotate(${dragPosition.x * 0.03 + rotationOverride}deg)`,
+                        transition: currentTransition,
+                        zIndex: 0
+                    }}
+                >
+                    <div
+                        className="absolute inset-0 rounded-[3rem] transition-opacity duration-300 ease-out"
+                        style={{
+                            boxShadow: idleShadowOuter,
+                            opacity: isHolding ? 0 : 1,
+                            willChange: 'opacity'
+                        }}
+                    />
+                    <div
+                        className="absolute inset-0 rounded-[3rem] transition-opacity duration-300 ease-out"
+                        style={{
+                            boxShadow: revealShadowOuter,
+                            opacity: isHolding ? 1 : 0,
+                            willChange: 'opacity'
+                        }}
+                    />
+                </div>
+
+                <div ref={cardRef} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} onContextMenu={(e) => e.preventDefault()} style={{ ...premiumStyle, borderRadius: theme.radius, backdropFilter: theme.blur ? `blur(${theme.blur})` : 'blur(24px)', WebkitBackdropFilter: theme.blur ? `blur(${theme.blur})` : 'blur(24px)', transition: isDragging ? 'none' : `${currentTransition}, border-color 0.3s ease, background 0.3s ease`, transform: `translate3d(${dragPosition.x}px, ${dragPosition.y + (isHolding ? -40 : 0)}px, 0) scale(${isHolding ? 1.03 : 1}) rotate(${dragPosition.x * 0.03 + rotationOverride}deg)`, animation: (isHolding && !player.isImp) ? 'reveal-pulse 2s infinite' : 'none', touchAction: 'none', cursor: isDragging ? 'grabbing' : 'grab', willChange: 'transform' } as React.CSSProperties} className={`w-full h-full relative overflow-hidden select-none touch-none group premium-border ${isHolding && player.isImp && impostorEffectsEnabled ? 'animate-impostor-shake' : ''}`}>
                     {isHolding && player.isImp && (
                         <>
                             <div className="absolute inset-0 z-0 opacity-20 pointer-events-none bg-repeat animate-static-noise" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }} />
