@@ -7,9 +7,10 @@ interface BackgroundProps {
     isTroll?: boolean;
     isParty?: boolean;
     activeColor?: string;
+    performanceMode?: boolean;
 }
 
-export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }: BackgroundProps) => {
+export const Background = memo(({ theme, phase, isTroll, isParty, activeColor, performanceMode }: BackgroundProps) => {
     // STATIC THEMES: No particles, no canvas, no blobs — just flat background
     if (theme.particleType === 'none') {
         return null;
@@ -25,13 +26,24 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
 
     // MOUSE TRACKING FOR AURA MODE & PARTICLES (Uses Ref to avoid React re-renders)
     useEffect(() => {
+        let lastEventTime = 0;
+        const throttleDelay = performanceMode ? 32 : 16; // ~30fps vs ~60fps for pointer events
+
         const handleMouseMove = (e: MouseEvent) => {
+            const now = performance.now();
+            if (now - lastEventTime < throttleDelay) return;
+            lastEventTime = now;
+            
             const x = (e.clientX / window.innerWidth) * 100;
             const y = (e.clientY / window.innerHeight) * 100;
             mousePosRef.current = { x, y };
         };
 
         const handleTouchMove = (e: TouchEvent) => {
+            const now = performance.now();
+            if (now - lastEventTime < throttleDelay) return;
+            lastEventTime = now;
+
             const touch = e.touches[0];
             const x = (touch.clientX / window.innerWidth) * 100;
             const y = (touch.clientY / window.innerHeight) * 100;
@@ -39,13 +51,13 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
         };
 
         window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('touchmove', handleTouchMove);
+        window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('touchmove', handleTouchMove);
         };
-    }, []);
+    }, [performanceMode]);
 
     // PAGE VISIBILITY MONITOR (Pauses rendering tasks when page is hidden)
     useEffect(() => {
@@ -363,7 +375,10 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
             particles = [];
             let count = theme.particleCount || (theme.particleType === 'circle' ? 60 : 80);
             if (isTroll || isParty) count *= 1.5;
-            count = Math.min(Math.floor(count), 80); // Hard particle count cap for performance
+            
+            // Hard particle count cap for performance
+            const maxParticles = performanceMode ? 25 : 80;
+            count = Math.min(Math.floor(count), maxParticles);
 
             for (let i = 0; i < count; i++) {
                 particles.push(new Particle());
@@ -372,8 +387,8 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
 
         initParticles();
 
-        // 30 FPS Throttled RAF loop
-        const fps = 30;
+        // RAF loop
+        const fps = performanceMode ? 15 : 30;
         const fpsInterval = 1000 / fps;
         let lastDrawTime = performance.now();
 
@@ -401,7 +416,7 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
             cancelAnimationFrame(animationFrameId);
             window.removeEventListener('resize', resize);
         };
-    }, [theme, phase, isTroll, activeColor, isParty]);
+    }, [theme, phase, isTroll, activeColor, isParty, performanceMode]);
 
     // RENDER AURA MODE (CSS BLOBS)
     if (theme.particleType === 'aura') {
@@ -418,10 +433,10 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                     }}
                 />
 
-                {/* BLOB 1 (Reduced CSS Blur) */}
+                {/* BLOB 1 */}
                 <div
                     ref={blob1Ref}
-                    className="absolute rounded-full blur-[60px] transition-all duration-1000 cubic-bezier(0.1, 0.7, 1.0, 0.1)"
+                    className={`absolute rounded-full transition-all duration-1000 cubic-bezier(0.1, 0.7, 1.0, 0.1) ${performanceMode ? 'blur-[40px]' : 'blur-[60px]'}`}
                     style={{
                         width: '50vw',
                         height: '50vw',
@@ -429,15 +444,15 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                         opacity: isLuminous ? 0.6 : 0.15,
                         top: '-10%',
                         left: '-10%',
-                        mixBlendMode: isLuminous ? 'multiply' : 'normal',
+                        mixBlendMode: (isLuminous && !performanceMode) ? 'multiply' : 'normal',
                         willChange: 'transform'
                     }}
                 />
 
-                {/* BLOB 2 (Reduced CSS Blur) */}
+                {/* BLOB 2 */}
                 <div
                     ref={blob2Ref}
-                    className="absolute rounded-full blur-[80px] transition-all duration-[2000ms] cubic-bezier(0.1, 0.7, 1.0, 0.1)"
+                    className={`absolute rounded-full transition-all duration-[2000ms] cubic-bezier(0.1, 0.7, 1.0, 0.1) ${performanceMode ? 'blur-[50px]' : 'blur-[80px]'}`}
                     style={{
                         width: '40vw',
                         height: '40vw',
@@ -445,15 +460,15 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                         opacity: isLuminous ? 0.5 : 0.12,
                         bottom: '10%',
                         right: '10%',
-                        mixBlendMode: isLuminous ? 'multiply' : 'normal',
+                        mixBlendMode: (isLuminous && !performanceMode) ? 'multiply' : 'normal',
                         willChange: 'transform'
                     }}
                 />
 
-                {/* BLOB 3 (Reduced CSS Blur & visibility check paused when hidden) */}
+                {/* BLOB 3 */}
                 <div
                     ref={blob3Ref}
-                    className="absolute rounded-full blur-[100px] animate-[pulse_8s_infinite] transition-all duration-1000"
+                    className={`absolute rounded-full animate-[pulse_8s_infinite] transition-all duration-1000 ${performanceMode ? 'blur-[60px]' : 'blur-[100px]'}`}
                     style={{
                         width: '60vw',
                         height: '60vw',
@@ -462,7 +477,7 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
                         top: '50%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
-                        mixBlendMode: isLuminous ? 'multiply' : 'normal'
+                        mixBlendMode: (isLuminous && !performanceMode) ? 'multiply' : 'normal'
                     }}
                 />
             </div>
@@ -484,6 +499,7 @@ export const Background = memo(({ theme, phase, isTroll, isParty, activeColor }:
         prevProps.phase === nextProps.phase &&
         prevProps.isTroll === nextProps.isTroll &&
         prevProps.isParty === nextProps.isParty &&
-        prevProps.activeColor === nextProps.activeColor
+        prevProps.activeColor === nextProps.activeColor &&
+        prevProps.performanceMode === nextProps.performanceMode
     );
 });

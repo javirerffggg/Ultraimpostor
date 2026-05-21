@@ -69,7 +69,6 @@ export const DebugConsole: React.FC<Props> = ({
                     setActiveTab(tabs[num - 1]);
                 }
             }
-            // Ctrl+Shift+T = Forzar Troll aleatorio
             if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
                 e.preventDefault();
                 const scenarios: TrollScenario[] = ['espejo_total', 'civil_solitario', 'falsa_alarma'];

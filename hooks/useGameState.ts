@@ -228,7 +228,10 @@ const INITIAL_STATE: GameState = {
     isTrollEvent: false,
     trollScenario: null,
     isArchitectRound: false,
-    history: getInitialHistory(),
+    history: {
+        ...getInitialHistory(),
+        setupStartTime: Date.now()
+    },
     settings: getInitialSettings(),
     debugState: { 
         isEnabled: false, 
@@ -485,14 +488,14 @@ export const useGameState = () => {
                 usePrismaMode: prev.settings.usePrismaMode,
                 selectedCats: prev.settings.selectedCategories,
                 history: prev.history,
-                debugOverrides: prev.debugState.isEnabled ? {
+                debugOverrides: {
                     forceTroll: prev.debugState.forceTroll,
                     forceArchitect: prev.debugState.forceArchitect,
                     forceRenuncia: prev.debugState.forceRenuncia,
                     forceSifon: prev.debugState.forceSifon,
                     forcePrisma: prev.debugState.forcePrisma,
                     forceBreakProtocol: prev.debugState.forceBreakProtocol
-                } : undefined,
+                },
                 isPartyMode: prev.settings.partyMode,
                 memoryModeConfig: prev.settings.memoryModeConfig,
                 categorySettings: {
@@ -503,6 +506,14 @@ export const useGameState = () => {
                     explorerMode: prev.settings.explorerMode || false
                 }
             });
+
+            // Calculate setup duration and cap at 15 minutes (900s)
+            const setupStart = prev.history.setupStartTime || Date.now();
+            const rawSetupDuration = (Date.now() - setupStart) / 1000;
+            const finalSetupDuration = Math.min(rawSetupDuration, 900);
+
+            result.newHistory.lastSetupDuration = finalSetupDuration;
+            result.newHistory.roundStartTime = Date.now();
 
             setCurrentWordPair(result.wordPair);
 
@@ -762,6 +773,36 @@ export const useGameState = () => {
         });
     }, [currentWordPair]);
 
+    const recordRoundDuration = useCallback((durationSeconds: number) => {
+        setGameState(prev => {
+            const cappedDuration = Math.min(durationSeconds, 3600); // Max 1 hour
+            const newDurations = [...(prev.history.lastRoundDurations || [])];
+            newDurations.push(cappedDuration);
+            if (newDurations.length > 3) newDurations.shift();
+
+            // If we are here, a round finished without Pandora triggering (if it was a normal round)
+            // Wait, this is called at the END of a round. 
+            // We should increment consecutiveNormalRounds if this was a NORMAL round.
+            // But we actually evaluate it at the START of the NEXT round.
+            // So we can increment it here.
+            let consecutiveNormal = prev.history.consecutiveNormalRounds || 0;
+            if (!prev.isTrollEvent) {
+                consecutiveNormal += 1;
+            } else {
+                consecutiveNormal = 0;
+            }
+
+            return {
+                ...prev,
+                history: {
+                    ...prev.history,
+                    lastRoundDurations: newDurations,
+                    consecutiveNormalRounds: consecutiveNormal
+                }
+            };
+        });
+    }, []);
+
     return {
         gameState,
         setGameState,
@@ -794,7 +835,8 @@ export const useGameState = () => {
             handleRenunciaDecision,
             handleRenunciaRoleSeen,
             handleSifonDecision,
-            handlePrismaDecision
+            handlePrismaDecision,
+            recordRoundDuration
         }
     };
 };

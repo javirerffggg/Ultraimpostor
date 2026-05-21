@@ -15,6 +15,7 @@ import { runVocalisProtocol } from './protocols/vocalis';
 import { calculateArchitectTrigger } from './protocols/architect';
 import { isEligibleForPrisma } from './protocols/prisma';
 import { selectLexiconWord, generateSmartHint, generateVanguardHints, generateArchitectOptions } from './lexicon/wordSelection';
+import { TROLL_HINTS } from '../trollHints';
 
 interface GameConfig {
     players: Player[];
@@ -49,6 +50,69 @@ interface GameConfig {
         explorerMode?: boolean;
     };
 }
+
+const getCivilStreakStdDev = (players: Player[], stats: Record<string, InfinityVault>): number => {
+    const streaks = players.map(p => getVault(p.name.trim().toLowerCase(), stats).metrics.civilStreak);
+    const mean = streaks.reduce((a, b) => a + b, 0) / (streaks.length || 1);
+    const variance = streaks.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (streaks.length || 1);
+    return Math.sqrt(variance);
+};
+
+const calculatePandoraProbability = (
+    useTrollMode: boolean,
+    isPartyMode: boolean,
+    roundCounter: number,
+    players: Player[],
+    history: GameState['history'],
+    paranoiaLevel: number
+): number => {
+    if (!useTrollMode) return 0;
+    
+    let prob = 7.5; // Base
+    
+    const consecutiveNormalRounds = history.consecutiveNormalRounds || 0;
+    if (consecutiveNormalRounds > 3) {
+        prob += 2.5 * (consecutiveNormalRounds - 3);
+    }
+    
+    const lastSetupDuration = history.lastSetupDuration || 0;
+    if (lastSetupDuration > 0 && lastSetupDuration < 25) {
+        prob += 4.5;
+    }
+    
+    const N = players.length;
+    const lastRoundDurations = history.lastRoundDurations || [];
+    
+    if (lastRoundDurations.length >= 2) {
+        const last2 = lastRoundDurations.slice(-2);
+        const avg = (last2[0] + last2[1]) / 2;
+        if (avg < 15 * N) {
+            prob += 3.0;
+        }
+    }
+    
+    if (lastRoundDurations.length >= 1) {
+        const last = lastRoundDurations[lastRoundDurations.length - 1];
+        if (last > 50 * N) {
+            prob += 1.5;
+        }
+    }
+    
+    const stdDev = getCivilStreakStdDev(players, history.playerStats);
+    if (stdDev < 1.2) {
+        prob += 3.0;
+    }
+    
+    if (paranoiaLevel > 80) {
+        prob *= 1.5;
+    }
+    
+    if (isPartyMode && roundCounter >= 6) {
+        prob += 20.0;
+    }
+    
+    return prob;
+};
 
 export const generateGameData = (config: GameConfig): { 
     players: GamePlayer[]; 
@@ -87,7 +151,10 @@ export const generateGameData = (config: GameConfig): {
     let leteoGrade: 0 | 1 | 2 | 3 = 0;
     let entropyLevel = 0;
     
-    if (!isTrollEvent && (debugOverrides?.forceBreakProtocol || (paranoiaLevel > 90 && coolingRounds === 0))) {
+    const pandoraProb = calculatePandoraProbability(useTrollMode, !!isPartyMode, currentRound, players, history, paranoiaLevel);
+    const pandoraTriggered = Math.random() * 100 < pandoraProb;
+    
+    if (!isTrollEvent && (debugOverrides?.forceBreakProtocol || (paranoiaLevel > 90 && coolingRounds === 0) || (pandoraTriggered && coolingRounds === 0))) {
         if (debugOverrides?.forceBreakProtocol) {
             breakProtocolType = debugOverrides.forceBreakProtocol;
             if (breakProtocolType === 'pandora') {
@@ -97,28 +164,27 @@ export const generateGameData = (config: GameConfig): {
                 entropyLevel = 1.0;
             }
         } else {
-            const roll = Math.random() * 100;
+            const hasLinearPattern = detectLinearPattern(pastImpostorIds, players);
+            const leteoTriggered = Math.random() * 100 < 25 && paranoiaLevel > 90;
             
-            if (roll < 25) {
+            if (paranoiaLevel > 90 && leteoTriggered) {
                 breakProtocolType = 'leteo';
-                const hasLinearPattern = detectLinearPattern(pastImpostorIds, players);
-                if (paranoiaLevel > 90) {
-                    leteoGrade = 3; 
-                    entropyLevel = 1.0;
-                } else if (hasLinearPattern) {
-                    leteoGrade = 2;
-                    entropyLevel = 0.6;
-                } else {
-                    leteoGrade = 1;
-                    entropyLevel = 0.3;
-                }
-            } else if (useTrollMode && roll < 35) {
+                leteoGrade = 3; 
+                entropyLevel = 1.0;
+            } else if (pandoraTriggered) {
                 breakProtocolType = 'pandora';
                 isTrollEvent = true;
-            } else if (roll < (useTrollMode ? 45 : 35)) {
-                breakProtocolType = 'mirror';
-            } else {
-                breakProtocolType = 'blind';
+            } else if (paranoiaLevel > 90) {
+                const roll = Math.random() * 100;
+                if (roll < 25) {
+                    breakProtocolType = 'leteo';
+                    leteoGrade = hasLinearPattern ? 2 : 1;
+                    entropyLevel = hasLinearPattern ? 0.6 : 0.3;
+                } else if (roll < 60) {
+                    breakProtocolType = 'mirror';
+                } else {
+                    breakProtocolType = 'blind';
+                }
             }
         }
     }
@@ -138,17 +204,24 @@ export const generateGameData = (config: GameConfig): {
     // --- STEP 3: HANDLE TROLL SCENARIO ---
     if (isTrollEvent) {
         if (!trollScenario) { 
-            const roll = Math.random() * 100;
-            if (roll < 70) trollScenario = 'espejo_total';
-            else if (roll < 90) trollScenario = 'civil_solitario';
-            else trollScenario = 'falsa_alarma';
+            if (isPartyMode && currentRound >= 6) {
+                const roll = Math.random() * 100;
+                if (roll < 35) trollScenario = 'falsa_alarma';
+                else if (roll < 70) trollScenario = 'espejo_total';
+                else trollScenario = 'civil_solitario';
+            } else {
+                const roll = Math.random() * 100;
+                if (roll < 65) trollScenario = 'espejo_total';
+                else if (roll < 82.5) trollScenario = 'civil_solitario';
+                else trollScenario = 'falsa_alarma';
+            }
         }
 
         const catDataList = CATEGORIES_DATA[catName];
         const trollBasePair = catDataList[Math.floor(Math.random() * catDataList.length)];
         const noiseIndex = Math.floor(Math.random() * players.length);
 
-        const generateBabylonHint = (playerIndex: number): string => {
+        const generateBabylonHint = (playerIndex: number, specificPair?: CategoryData): string => {
             if (!useHintMode) return "ERES EL IMPOSTOR";
             if (playerIndex === noiseIndex) {
                 const otherCats = Object.keys(CATEGORIES_DATA).filter(c => c !== catName);
@@ -157,18 +230,44 @@ export const generateGameData = (config: GameConfig): {
                 const noiseHint = noisePair.hints ? noisePair.hints[0] : (noisePair.hint || "RUIDO");
                 return `PISTA: ${noiseHint} (RUIDO)`;
             }
-            const randomRelatedPair = catDataList[Math.floor(Math.random() * catDataList.length)];
-            return Math.random() > 0.5 ? `PISTA: ${catName}` : `PISTA: ${generateSmartHint(randomRelatedPair)}`;
+            const pairToUse = specificPair || catDataList[Math.floor(Math.random() * catDataList.length)];
+            return Math.random() > 0.5 ? `PISTA: ${catName}` : `PISTA: ${generateSmartHint(pairToUse)}`;
+        };
+
+        const getTrollHint = (fallback: string) => {
+            if (!useHintMode) return "ERES EL IMPOSTOR";
+            if (TROLL_HINTS && TROLL_HINTS.length > 0) {
+                return `PISTA: ${TROLL_HINTS[Math.floor(Math.random() * TROLL_HINTS.length)]}`;
+            }
+            return fallback;
         };
 
         let trollPlayers: GamePlayer[] = [];
+        
+        // MAHR v2.1 Assignments
+        const sortedByKarma = [...players].sort((a, b) => {
+            const aStreak = getVault(a.name.trim().toLowerCase(), history.playerStats).metrics.civilStreak;
+            const bStreak = getVault(b.name.trim().toLowerCase(), history.playerStats).metrics.civilStreak;
+            return aStreak - bStreak; // Ascending: [lowest streak (impostor), ..., highest streak]
+        });
+        
+        const lastImpIds = history.pastImpostorIds.slice(0, 2); // Ex-impostors
+        
         if (trollScenario === 'espejo_total') {
-            trollPlayers = players.map((p, idx) => ({ ...p, role: 'Impostor', word: generateBabylonHint(idx), realWord: trollBasePair.civ, isImp: true, category: catName, areScore: 0, impostorProbability: 100, viewTime: 0 }));
+            trollPlayers = players.map((p, idx) => {
+                const isExImpOrArch = lastImpIds.includes(p.id) || p.id === history.lastArchitectRound?.toString();
+                const diffPair = catDataList[Math.floor(Math.random() * catDataList.length)]; // Hardest hints
+                const fallback = generateBabylonHint(idx, isExImpOrArch ? diffPair : trollBasePair);
+                return { ...p, role: 'Impostor', word: getTrollHint(fallback), realWord: trollBasePair.civ, isImp: true, category: catName, areScore: 0, impostorProbability: 100, viewTime: 0 };
+            });
         } else if (trollScenario === 'civil_solitario') {
-            const civilIndex = Math.floor(Math.random() * players.length);
-            trollPlayers = players.map((p, idx) => ({ ...p, role: idx === civilIndex ? 'Civil' : 'Impostor', word: idx === civilIndex ? trollBasePair.civ : generateBabylonHint(idx), realWord: trollBasePair.civ, isImp: idx !== civilIndex, category: catName, areScore: 0, impostorProbability: idx === civilIndex ? 0 : 100, viewTime: 0 }));
-        } else {
-            trollPlayers = players.map(p => ({ ...p, role: 'Civil', word: trollBasePair.civ, realWord: trollBasePair.civ, isImp: false, category: catName, areScore: 0, impostorProbability: 0, viewTime: 0 }));
+            const civilPlayer = sortedByKarma[0] || players[0];
+            trollPlayers = players.map((p, idx) => {
+                const fallback = generateBabylonHint(idx);
+                return { ...p, role: p.id === civilPlayer.id ? 'Civil' : 'Impostor', word: p.id === civilPlayer.id ? trollBasePair.civ : getTrollHint(fallback), realWord: trollBasePair.civ, isImp: p.id !== civilPlayer.id, category: catName, areScore: 0, impostorProbability: p.id === civilPlayer.id ? 0 : 100, viewTime: 0 };
+            });
+        } else { // falsa_alarma
+            trollPlayers = players.map(p => ({ ...p, role: 'Civil', word: trollBasePair.civ, realWord: trollBasePair.civ, isImp: false, category: catName, areScore: 0, impostorProbability: 0, viewTime: 0, isGlitchy: lastImpIds.includes(p.id) }));
         }
 
         const vocalisStarter = runVocalisProtocol(players, history, false);

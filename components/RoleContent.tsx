@@ -170,13 +170,13 @@ export const RoleContent: React.FC<RoleContentProps> = ({
                         <Gavel size={48} className="relative z-10 drop-shadow-[0_0_15px_rgba(255,215,0,0.8)]" style={{ color: '#FFD700' }} />
                     </div>
                 ) : (
-                    <div className="relative flex items-center justify-center mb-1">
-                        <div className="absolute w-28 h-28 bg-green-600/30 rounded-full blur-xl animate-pulse" />
-                        <div className="absolute w-24 h-24 rounded-full border border-green-500/30 border-dashed opacity-60 animate-[spin_12s_linear_infinite_reverse]" />
-                        <div className="absolute w-16 h-16 bg-green-500/20 rounded-full blur-md mix-blend-screen animate-imp-aura-pulse" />
-                        <Shield size={48} className="text-green-500 relative z-10 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)]" />
-                    </div>
-                )}
+                            <div className="relative flex items-center justify-center mb-1">
+                                <div className={`absolute w-28 h-28 ${player.isGlitchy ? 'bg-red-600/30' : 'bg-green-600/30'} rounded-full blur-xl animate-pulse`} />
+                                <div className={`absolute w-24 h-24 rounded-full border ${player.isGlitchy ? 'border-red-500/30' : 'border-green-500/30'} border-dashed opacity-60 ${player.isGlitchy ? 'animate-spin-glitch' : 'animate-[spin_12s_linear_infinite_reverse]'}`} />
+                                <div className={`absolute w-16 h-16 ${player.isGlitchy ? 'bg-red-500/20' : 'bg-green-500/20'} rounded-full blur-md mix-blend-screen animate-imp-aura-pulse`} />
+                                <Shield size={48} className={`${player.isGlitchy ? 'text-red-500 animate-impostor-shake' : 'text-green-500'} relative z-10 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)]`} />
+                            </div>
+                        )}
 
                 {player.isArchitect && (
                     <div className="flex flex-col items-center gap-1 mb-2 mt-1 animate-in fade-in zoom-in duration-300">
@@ -190,7 +190,7 @@ export const RoleContent: React.FC<RoleContentProps> = ({
                 )}
 
                 <h3 
-                    className={`text-xl font-black uppercase tracking-widest ${player.isImp ? 'text-red-500 glitch-text-anim' : (player.isOracle ? 'text-violet-400' : (player.isAlcalde ? 'gold-glow' : (player.isArchitect ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]' : 'text-green-500')))}`} 
+                    className={`text-xl font-black uppercase tracking-widest ${player.isImp ? 'text-red-500 glitch-text-anim' : (player.isOracle ? 'text-violet-400' : (player.isAlcalde ? 'gold-glow' : (player.isArchitect ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]' : (player.isGlitchy ? 'text-green-500 glitch-text-anim' : 'text-green-500'))))}`} 
                     data-text={player.isOracle ? 'ORÁCULO' : (player.isArchitect ? 'ARQUITECTO' : player.role)}
                     style={player.isAlcalde ? { color: '#FFD700' } : {}}
                 >
@@ -321,17 +321,17 @@ export const RoleContent: React.FC<RoleContentProps> = ({
                              </p>
                         )}
 
-                        {player.isImp && player.nexusPartners && player.nexusPartners.length > 0 && (
-                            <div className="mt-3 w-full bg-black/60 border border-red-500/60 rounded-xl p-2.5 backdrop-blur-md animate-in fade-in slide-in-from-bottom duration-500 shadow-[0_0_20px_rgba(239,68,68,0.35)]">
-                                <div className="flex items-center gap-2 mb-1.5 border-b border-red-500/30 pb-1.5">
-                                    <Network size={14} className="text-red-300 animate-pulse" />
-                                    <span className="text-xs font-black text-red-300 uppercase tracking-widest drop-shadow-[0_0_6px_rgba(239,68,68,0.4)]">
-                                        {player.nexusPartners.length === 1 ? 'El otro impostor es' : 'Los otros impostores son'}
+                        {((player.isImp && player.nexusPartners && player.nexusPartners.length > 0) || (player.hasFakeNexus && player.nexusPartners && player.nexusPartners.length > 0)) && (
+                            <div className={`mt-3 w-full bg-black/60 border ${player.isImp ? 'border-red-500/60' : 'border-green-500/60'} rounded-xl p-2.5 backdrop-blur-md animate-in fade-in slide-in-from-bottom duration-500 shadow-[0_0_20px_${player.isImp ? 'rgba(239,68,68,0.35)' : 'rgba(34,197,94,0.35)'}]`}>
+                                <div className={`flex items-center gap-2 mb-1.5 border-b ${player.isImp ? 'border-red-500/30' : 'border-green-500/30'} pb-1.5`}>
+                                    <Network size={14} className={`${player.isImp ? 'text-red-300' : 'text-green-300'} animate-pulse`} />
+                                    <span className={`text-xs font-black ${player.isImp ? 'text-red-300' : 'text-green-300'} uppercase tracking-widest drop-shadow-[0_0_6px_${player.isImp ? 'rgba(239,68,68,0.4)' : 'rgba(34,197,94,0.4)'}]`}>
+                                        {player.nexusPartners.length === 1 ? (player.isImp ? 'El otro impostor es' : 'El otro infiltrado civil es') : (player.isImp ? 'Los otros impostores son' : 'Los otros infiltrados son')}
                                     </span>
                                 </div>
                                 <div className="flex flex-wrap justify-center gap-2">
                                     {player.nexusPartners.map((partnerName, idx) => (
-                                        <span key={idx} className="text-sm font-black text-white bg-red-600/90 px-3 py-1 rounded shadow-md uppercase tracking-wider">
+                                        <span key={idx} className={`text-sm font-black text-white ${player.isImp ? 'bg-red-600/90' : 'bg-green-600/90'} px-3 py-1 rounded shadow-md uppercase tracking-wider`}>
                                             {partnerName}
                                         </span>
                                     ))}

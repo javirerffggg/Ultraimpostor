@@ -24,6 +24,7 @@ interface Props {
     isExiting: boolean;
     transitionName?: string | null;
     getPlayerProgression?: (name: string) => PlayerProgression;
+    onRoundComplete?: (duration: number) => void;
 }
 
 // --- SESSION ROUND COUNTER HELPER ---
@@ -239,7 +240,7 @@ const ReRevealModal: React.FC<{
     );
 };
 
-export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onReplay, currentPlayerColor, onNextPlayer, onOracleConfirm, onRenunciaDecision, onRenunciaRoleSeen, isExiting, transitionName, getPlayerProgression }) => {
+export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onReplay, currentPlayerColor, onNextPlayer, onOracleConfirm, onRenunciaDecision, onRenunciaRoleSeen, isExiting, transitionName, getPlayerProgression, onRoundComplete }) => {
     const impostors = gameState.gameData.filter(p => p.isImp);
     const civilWord = gameState.gameData.find(p => !p.isImp)?.realWord || "???";
     const isTroll = gameState.isTrollEvent;
@@ -298,6 +299,7 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
         if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
         holdTimeoutRef.current = window.setTimeout(() => {
             setIsDecrypted(true);
+            if (onRoundComplete) onRoundComplete(timerSeconds);
             if (navigator.vibrate) navigator.vibrate([50, 50, 200]);
         }, 1000);
     };

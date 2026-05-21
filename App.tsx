@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useMemo, useCallback, startTransition } from 'react';
 import { THEMES, PLAYER_COLORS, getTheme } from './constants';
 import { ThemeName } from './types';
 import { useGameState } from './hooks/useGameState';
@@ -22,6 +22,9 @@ const RevealingView = lazy(() => import('./components/views/RevealingView').then
 const ResultsView = lazy(() => import('./components/views/ResultsView').then(m => ({ default: m.ResultsView })));
 const OracleSelectionView = lazy(() => import('./components/views/OracleSelectionView').then(m => ({ default: m.OracleSelectionView })));
 const UnlockNotification = lazy(() => import('./components/progression/UnlockNotification').then(m => ({ default: m.UnlockNotification })));
+
+const preloadRevealingView = () =>
+    import('./components/views/RevealingView').catch(() => {/* silencioso */});
 
 const preloadResultsView = () =>
     import('./components/views/ResultsView').catch(() => {/* silencioso */});
@@ -75,6 +78,10 @@ function App() {
     const [konamiActivated, setKonamiActivated] = useState(false);
 
     useEffect(() => {
+        preloadRevealingView();
+    }, []);
+
+    useEffect(() => {
         if (gameState.phase === 'revealing') {
             preloadResultsView();
         }
@@ -91,7 +98,7 @@ function App() {
                         ...prev,
                         debugState: { ...prev.debugState, isEnabled: true, easterEggUnlocked: true }
                     }));
-                    confetti({ particleCount: 200, spread: 160, origin: { y: 0.5 }, colors: ['#ff0000','#00ff00','#0000ff','#ffff00'] });
+                    confetti({ particleCount: prev.settings.performanceMode ? 50 : 200, spread: 160, origin: { y: 0.5 }, colors: ['#ff0000','#00ff00','#0000ff','#ffff00'] });
                     if (navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
                     setTimeout(() => alert('\uD83C\uDFAE KONAMI CODE ACTIVATED!\n\nModo Centinela Legendary desbloqueado.'), 100);
                     return [];
@@ -149,56 +156,60 @@ function App() {
         setIsExiting(true);
 
         setTimeout(() => {
-            setGameState(prev => {
-                const newData = [...prev.gameData];
-                if (newData[prev.currentPlayerIndex]) {
-                    newData[prev.currentPlayerIndex].viewTime = viewTime;
-                }
-
-                const nextIndex = prev.currentPlayerIndex + 1;
-                const isLast = nextIndex >= prev.players.length;
-
-                if (isLast) {
-                    // FIX: No saltar a 'results' si hay una decisión Renuncia pendiente.
-                    // Esto ocurre cuando el candidato es el último jugador y aún no
-                    // ha tomado su decisión (accept / reject / transfer).
-                    if (prev.renunciaData && prev.renunciaData.decision === 'pending') {
-                        setIsExiting(false);
-                        return { ...prev, gameData: newData };
+            startTransition(() => {
+                setGameState(prev => {
+                    const newData = [...prev.gameData];
+                    if (newData[prev.currentPlayerIndex]) {
+                        newData[prev.currentPlayerIndex].viewTime = viewTime;
                     }
 
-                    if (prev.magistradoData) {
-                        setShowMagistradoAnnouncement(true);
-                        setIsExiting(false);
-                        return { ...prev, gameData: newData };
-                    }
-                    if (prev.settings.partyMode) {
-                        setTimeout(() => triggerPartyMessage('discussion'), 500);
-                    }
-                    setIsExiting(false);
-                    return { ...prev, gameData: newData, phase: 'results', currentDrinkingPrompt: '' };
-                }
+                    const nextIndex = prev.currentPlayerIndex + 1;
+                    const isLast = nextIndex >= prev.players.length;
 
-                if (prev.settings.partyMode) {
-                    setTimeout(() => triggerPartyMessage('revealing'), 50);
-                }
-
-                if (prev.settings.passPhoneMode) {
-                    setTransitionName(prev.players[nextIndex].name);
-                    setTimeout(() => {
-                        setIsExiting(true);
-                        setTimeout(() => {
-                            setTransitionName(null);
-                            setGameState(p => ({ ...p, currentPlayerIndex: nextIndex }));
+                    if (isLast) {
+                        // FIX: No saltar a 'results' si hay una decisión Renuncia pendiente.
+                        // Esto ocurre cuando el candidato es el último jugador y aún no
+                        // ha tomado su decisión (accept / reject / transfer).
+                        if (prev.renunciaData && prev.renunciaData.decision === 'pending') {
                             setIsExiting(false);
-                        }, 300);
-                    }, 2000);
-                    return { ...prev, gameData: newData };
-                }
+                            return { ...prev, gameData: newData };
+                        }
 
-                setTransitionName(null);
-                setIsExiting(false);
-                return { ...prev, gameData: newData, currentPlayerIndex: nextIndex };
+                        if (prev.magistradoData) {
+                            setShowMagistradoAnnouncement(true);
+                            setIsExiting(false);
+                            return { ...prev, gameData: newData };
+                        }
+                        if (prev.settings.partyMode) {
+                            setTimeout(() => triggerPartyMessage('discussion'), 500);
+                        }
+                        setIsExiting(false);
+                        return { ...prev, gameData: newData, phase: 'results', currentDrinkingPrompt: '' };
+                    }
+
+                    if (prev.settings.partyMode) {
+                        setTimeout(() => triggerPartyMessage('revealing'), 50);
+                    }
+
+                    if (prev.settings.passPhoneMode) {
+                        setTransitionName(prev.players[nextIndex].name);
+                        setTimeout(() => {
+                            setIsExiting(true);
+                            setTimeout(() => {
+                                startTransition(() => {
+                                    setTransitionName(null);
+                                    setGameState(p => ({ ...p, currentPlayerIndex: nextIndex }));
+                                    setIsExiting(false);
+                                });
+                            }, 300);
+                        }, 2000);
+                        return { ...prev, gameData: newData };
+                    }
+
+                    setTransitionName(null);
+                    setIsExiting(false);
+                    return { ...prev, gameData: newData, currentPlayerIndex: nextIndex };
+                });
             });
         }, 300);
     }, [isExiting, triggerPartyMessage]);
@@ -207,7 +218,9 @@ function App() {
         setIsPixelating(true);
         if (navigator.vibrate) navigator.vibrate(10);
         setTimeout(() => {
-            setGameState(prev => ({ ...prev, phase: 'setup', currentDrinkingPrompt: '' }));
+            startTransition(() => {
+                setGameState(prev => ({ ...prev, phase: 'setup', currentDrinkingPrompt: '' }));
+            });
             setIsPixelating(false);
         }, 400);
     };
@@ -240,6 +253,7 @@ function App() {
                     isTroll={gameState.isTrollEvent}
                     activeColor={currentPlayerColor}
                     isParty={gameState.settings.partyMode}
+                    performanceMode={gameState.settings.performanceMode}
                 />
             </Suspense>
 
@@ -403,6 +417,7 @@ function App() {
                         isExiting={isExiting}
                         transitionName={transitionName}
                         getPlayerProgression={getPlayerProgression}
+                        onRoundComplete={actions.recordRoundDuration}
                     />
                 )}
             </Suspense>

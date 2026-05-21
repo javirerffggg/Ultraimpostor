@@ -79,6 +79,9 @@ export interface GamePlayer extends Player {
     // PRISMA
     prismaChoice?: PrismaDecision;
     leakedPrismaHints?: string[];
+    // PANDORA v2.0
+    isGlitchy?: boolean;
+    hasFakeNexus?: boolean;
 }
 
 export type PartyIntensity = 'aperitivo' | 'hora_punta' | 'after_hours' | 'resaca';
@@ -257,6 +260,12 @@ export interface GameState {
         rotationIndex?: number;
         temporaryBlacklist?: Record<string, number>;
         explorerDeck?: string[];
+        // PANDORA v2.0
+        roundStartTime?: number;
+        setupStartTime?: number;
+        lastRoundDurations?: number[];
+        lastSetupDuration?: number;
+        consecutiveNormalRounds?: number;
     };
     settings: {
         hintMode: boolean;
