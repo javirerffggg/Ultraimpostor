@@ -30,6 +30,7 @@ interface GameConfig {
     useMagistradoMode: boolean;
     useSifonMode: boolean;
     usePrismaMode: boolean;
+    usePrismaLiteMode: boolean;
     selectedCats: string[];
     history: GameState['history'];
     debugOverrides?: {
@@ -128,7 +129,7 @@ export const generateGameData = (config: GameConfig): {
     prismaData?: PrismaData;
     wordPair: CategoryData;
 } => {
-    const { players, impostorCount, useHintMode, useTrollMode, useArchitectMode, useOracleMode, useVanguardiaMode, useNexusMode, useRenunciaMode, useMagistradoMode, useSifonMode, usePrismaMode, selectedCats, history, debugOverrides, isPartyMode, memoryModeConfig, categorySettings } = config;
+    const { players, impostorCount, useHintMode, useTrollMode, useArchitectMode, useOracleMode, useVanguardiaMode, useNexusMode, useRenunciaMode, useMagistradoMode, useSifonMode, usePrismaMode, usePrismaLiteMode, selectedCats, history, debugOverrides, isPartyMode, memoryModeConfig, categorySettings } = config;
     
     const currentRound = history.roundCounter + 1;
     
@@ -794,18 +795,23 @@ export const generateGameData = (config: GameConfig): {
     let prismaData: PrismaData | undefined;
 
     const shouldTryPrisma = (
-        (usePrismaMode || debugOverrides?.forcePrisma) &&
+        (usePrismaMode || usePrismaLiteMode || debugOverrides?.forcePrisma || debugOverrides?.forcePrismaLite) &&
         impostorCount === 1 &&
         !isTrollEvent
     );
 
-    if (shouldTryPrisma && (debugOverrides?.forcePrisma || isEligibleForPrisma(gamePlayers))) {
+    if (shouldTryPrisma && (debugOverrides?.forcePrisma || debugOverrides?.forcePrismaLite || isEligibleForPrisma(gamePlayers))) {
         const impostorPlayer = gamePlayers.find(p => p.isImp);
         if (impostorPlayer) {
+            let liteModeActive = usePrismaLiteMode && !usePrismaMode;
+            if (debugOverrides?.forcePrisma) liteModeActive = false;
+            if (debugOverrides?.forcePrismaLite) liteModeActive = true;
+
             prismaData = {
                 activePlayerId: impostorPlayer.id,
                 decision: 'pending',
-                leakedHints: []
+                leakedHints: [],
+                isLite: liteModeActive
             };
 
             // Registrar activación en la Bóveda de Infinitum

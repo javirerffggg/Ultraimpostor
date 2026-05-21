@@ -145,6 +145,8 @@ export interface PrismaData {
     decision: PrismaDecision;
     leakedHints: string[];
     timestamp?: number;
+    isLite?: boolean;
+    witnessPlayerId?: string;
 }
 
 export interface MagistradoData {
@@ -201,6 +203,7 @@ export interface MatchLog {
     prismaTriggered?: boolean;
     prismaDecision?: PrismaDecision;
     prismaExposureCount?: number;
+    prismaWitness?: string;
 }
 
 export type TrollScenario = 'espejo_total' | 'civil_solitario' | 'falsa_alarma';
@@ -302,6 +305,8 @@ export interface GameState {
         useSifonMode: boolean;
         /** Protocolo PRISMA: dilema del infiltrado solitario */
         usePrismaMode: boolean;
+        /** Protocolo PRISMA LITE: igual pero filtra a 1 aleatorio */
+        usePrismaLiteMode: boolean;
         /** Modo layout organizado por pestañas inferiores (estilo iOS) */
         useTabbedLayout: boolean;
         /** Silenciar popups de subida de nivel y desbloqueos */
@@ -314,6 +319,7 @@ export interface GameState {
         forceRenuncia?: boolean;
         forceSifon?: boolean;
         forcePrisma?: boolean;
+        forcePrismaLite?: boolean;
         forceBreakProtocol?: 'pandora' | 'mirror' | 'blind' | 'leteo' | null;
         godModeAssignments?: Record<string, string>;
         easterEggUnlocked?: boolean;

@@ -145,6 +145,7 @@ export function updateCounters(
     if (gameState.settings.renunciaMode) { protocolCount++; protocols.push('renuncia'); }
     if (gameState.settings.useSifonMode) { protocolCount++; protocols.push('sifon'); }
     if (gameState.settings.usePrismaMode) { protocolCount++; protocols.push('prisma'); }
+    if (gameState.settings.usePrismaLiteMode) { protocolCount++; protocols.push('prismaLite'); }
     if (gameState.settings.nexusMode) { protocolCount++; protocols.push('nexus'); }
     if (gameState.settings.vanguardiaMode) { protocolCount++; protocols.push('vanguardia'); }
 

@@ -20,6 +20,7 @@ interface Props {
     onForceRenuncia: (force: boolean) => void;
     onForceSifon: (force: boolean) => void;
     onForcePrisma: (force: boolean) => void;
+    onForcePrismaLite: (force: boolean) => void;
     onForceBreakProtocol: (protocol: 'pandora' | 'mirror' | 'blind' | 'leteo' | null) => void;
     onExportState: () => void;
     onImportState: (state: string) => void;
@@ -38,6 +39,7 @@ export const DebugConsole: React.FC<Props> = ({
     onForceRenuncia,
     onForceSifon,
     onForcePrisma,
+    onForcePrismaLite,
     onForceBreakProtocol,
     onExportState,
     onImportState,
@@ -242,6 +244,7 @@ export const DebugConsole: React.FC<Props> = ({
                                 onForceRenuncia={onForceRenuncia}
                                 onForceSifon={onForceSifon}
                                 onForcePrisma={onForcePrisma}
+                                onForcePrismaLite={onForcePrismaLite}
                                 onForceBreakProtocol={onForceBreakProtocol}
                             />
                         )}
@@ -379,8 +382,9 @@ const OverrideTab: React.FC<{
     onForceRenuncia: (force: boolean) => void;
     onForceSifon: (force: boolean) => void;
     onForcePrisma: (force: boolean) => void;
+    onForcePrismaLite: (force: boolean) => void;
     onForceBreakProtocol: (protocol: 'pandora' | 'mirror' | 'blind' | 'leteo' | null) => void;
-}> = ({ gameState, theme, onForceTroll, onForceArchitect, onForceRenuncia, onForceSifon, onForcePrisma, onForceBreakProtocol }) => {
+}> = ({ gameState, theme, onForceTroll, onForceArchitect, onForceRenuncia, onForceSifon, onForcePrisma, onForcePrismaLite, onForceBreakProtocol }) => {
     
     const trollScenarios: { value: TrollScenario; label: string; desc: string }[] = [
         { value: 'espejo_total', label: '🪞 Espejo Total', desc: 'Todos impostores' },
@@ -457,6 +461,12 @@ const OverrideTab: React.FC<{
                         label="🌈 Prisma"
                         active={gameState.debugState.forcePrisma || false}
                         onClick={() => onForcePrisma(!gameState.debugState.forcePrisma)}
+                        theme={theme}
+                    />
+                    <ToggleButton
+                        label="✨ Prisma Lite"
+                        active={gameState.debugState.forcePrismaLite || false}
+                        onClick={() => onForcePrismaLite(!gameState.debugState.forcePrismaLite)}
                         theme={theme}
                     />
                 </div>

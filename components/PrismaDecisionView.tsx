@@ -5,10 +5,11 @@ import { Sparkles, Moon, Zap, Check } from 'lucide-react';
 interface Props {
     player: Player;
     theme: ThemeConfig;
+    isLite?: boolean;
     onDecision: (decision: PrismaDecision) => void;
 }
 
-export const PrismaDecisionView: React.FC<Props> = ({ player, theme, onDecision }) => {
+export const PrismaDecisionView: React.FC<Props> = ({ player, theme, isLite, onDecision }) => {
     const [selected, setSelected] = useState<PrismaDecision | null>(null);
 
     const handleConfirm = () => {
@@ -72,7 +73,7 @@ export const PrismaDecisionView: React.FC<Props> = ({ player, theme, onDecision 
                             Doble Pista
                         </h3>
                         <p className="text-[10px] leading-relaxed opacity-70" style={{ color: theme.sub }}>
-                            Obtienes dos pistas pero los civiles sabrán cuáles son.
+                            Obtienes dos pistas pero {isLite ? 'un civil sabrá' : 'los civiles sabrán'} cuáles son.
                         </p>
                     </div>
                 </button>

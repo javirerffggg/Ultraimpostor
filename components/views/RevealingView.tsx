@@ -200,11 +200,8 @@ export const RevealingView: React.FC<Props> = React.memo(({
     const activePrismaImpIndex = gameState.prismaData 
         ? gameState.gameData.findIndex(p => p.id === gameState.prismaData?.activePlayerId)
         : -1;
-    const hasPrismaLeak = !currentPlayer.isImp && 
-        !!gameState.prismaData && 
-        gameState.prismaData.decision === 'overload' && 
-        gameState.currentPlayerIndex > activePrismaImpIndex &&
-        (gameState.prismaData.leakedHints?.length ?? 0) > 0;
+    const hasPrismaLeak = !currentPlayer.isImp && (currentPlayer.leakedPrismaHints?.length ?? 0) > 0;
+    const isPrismaLiteLeak = hasPrismaLeak && gameState.prismaData?.isLite;
 
     // --- ARCHITECT LOGIC ---
     const isArchitectCard = gameState.isArchitectRound &&
@@ -348,6 +345,7 @@ export const RevealingView: React.FC<Props> = React.memo(({
         <PrismaDecisionView
             player={currentPlayer}
             theme={theme}
+            isLite={gameState.prismaData.isLite}
             onDecision={onPrismaDecision}
         />
     ) : null;
@@ -509,7 +507,7 @@ export const RevealingView: React.FC<Props> = React.memo(({
                                 </div>
                             </div>
                         )}
-                        {hasPrismaLeak && (
+                        {hasPrismaLeak && !isPrismaLiteLeak && (
                             <div
                                 className="mt-3 mx-auto w-full max-w-xs rounded-2xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500 overflow-hidden relative"
                                 style={{
@@ -533,7 +531,37 @@ export const RevealingView: React.FC<Props> = React.memo(({
                                     <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(207,250,254,0.9)' }}>
                                         La luz refractada revela dos palabras clave del Infiltrado:{' '}
                                         <span className="font-extrabold tracking-wide text-cyan-300">
-                                            {gameState.prismaData!.leakedHints.join(' • ')}
+                                            {currentPlayer.leakedPrismaHints!.join(' • ')}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                        {isPrismaLiteLeak && (
+                            <div
+                                className="mt-3 mx-auto w-full max-w-xs rounded-2xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500 overflow-hidden relative"
+                                style={{
+                                    background: 'linear-gradient(135deg, rgba(168,85,247,0.12), rgba(6,182,212,0.18))',
+                                    border: '1px solid rgba(6,182,212,0.3)',
+                                    boxShadow: '0 0 25px rgba(6,182,212,0.2)'
+                                }}
+                            >
+                                <div 
+                                    className="absolute inset-0 opacity-5 mix-blend-screen pointer-events-none animate-shimmer"
+                                    style={{
+                                        background: 'linear-gradient(90deg, rgba(239,68,68,1) 0%, rgba(245,158,11,1) 17%, rgba(16,185,129,1) 33%, rgba(6,182,212,1) 50%, rgba(59,130,246,1) 67%, rgba(139,92,246,1) 83%, rgba(236,72,153,1) 100%)',
+                                        backgroundSize: '200% 100%',
+                                    }}
+                                />
+                                <Sparkles size={16} style={{ color: '#22d3ee', flexShrink: 0, marginTop: 2 }} className="relative z-10" />
+                                <div className="relative z-10">
+                                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] mb-1.5" style={{ color: 'rgba(34,211,238,0.8)' }}>
+                                        🌈 Resplandor del Prisma
+                                    </p>
+                                    <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(207,250,254,0.9)' }}>
+                                        El impostor tiene las pistas:{' '}
+                                        <span className="font-extrabold tracking-wide text-cyan-300">
+                                            {currentPlayer.leakedPrismaHints![0]} y {currentPlayer.leakedPrismaHints![1]}
                                         </span>
                                     </p>
                                 </div>
@@ -615,6 +643,21 @@ export const RevealingView: React.FC<Props> = React.memo(({
                     50% { transform: translate(10px, -50%); }
                 }
                 .animate-pass-arrow { animation: pass-arrow 1.5s ease-in-out infinite; }
+                @keyframes glitch-skew {
+                    0% { transform: skew(0deg); }
+                    10% { transform: skew(-2deg); }
+                    20% { transform: skew(1deg); }
+                    30% { transform: skew(-1deg); }
+                    40% { transform: skew(0.5deg); }
+                    50% { transform: skew(-0.5deg); }
+                    60% { transform: skew(0deg); }
+                    100% { transform: skew(0deg); }
+                }
+                @keyframes scanline {
+                    0% { transform: translateY(-100%); }
+                    100% { transform: translateY(100%); }
+                }
+                .animate-scanline { animation: scanline 2s linear infinite; }
             `}</style>
         </div>
     );

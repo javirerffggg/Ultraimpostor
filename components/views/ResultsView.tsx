@@ -264,6 +264,7 @@ export const ResultsView: React.FC<Props> = ({ gameState, theme, onBack, onRepla
     if (gameState.settings.renunciaMode && gameState.gameData.some(p => p.hasRejectedImpRole)) activeProtocols.push({ name: 'Renuncia', icon: <AlertTriangle size={12} /> });
     if (gameState.settings.useSifonMode && (gameState.gameData.some(p => p.isSiphoner) || lastLog.sifonTriggered)) activeProtocols.push({ name: 'Sifón', icon: <Network size={12} /> });
     if (gameState.settings.usePrismaMode && (gameState.gameData.some(p => p.prismaChoice) || lastLog.prismaTriggered)) activeProtocols.push({ name: 'Prisma', icon: <Sparkles size={12} /> });
+    if (gameState.settings.usePrismaLiteMode && (gameState.gameData.some(p => p.prismaChoice) || lastLog.prismaTriggered)) activeProtocols.push({ name: 'Prisma Lite', icon: <Sparkles size={12} /> });
     if (gameState.settings.nexusMode) activeProtocols.push({ name: 'Nexus', icon: <Zap size={12} /> });
     if (gameState.settings.oracleMode && gameState.gameData.some(p => p.isOracle)) activeProtocols.push({ name: 'Oráculo', icon: <Eye size={12} /> });
     if (gameState.settings.vanguardiaMode && gameState.gameData.some(p => p.isVanguardia)) activeProtocols.push({ name: 'Vanguardia', icon: <Flame size={12} /> });

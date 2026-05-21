@@ -60,6 +60,7 @@ const DEFAULT_SETTINGS: GameState['settings'] = {
     performanceMode: false,
     useSifonMode: false,
     usePrismaMode: false,
+    usePrismaLiteMode: false,
     useTabbedLayout: false,
     disableUnlockPopups: false,
 };
@@ -165,6 +166,7 @@ const getInitialSettings = (): GameState['settings'] => {
                 performanceMode: parsed.performanceMode ?? false,
                 useSifonMode: parsed.useSifonMode ?? false,
                 usePrismaMode: parsed.usePrismaMode ?? false,
+                usePrismaLiteMode: parsed.usePrismaLiteMode ?? false,
                 useTabbedLayout: parsed.useTabbedLayout ?? false,
                 disableUnlockPopups: parsed.disableUnlockPopups ?? false,
             };
@@ -486,6 +488,7 @@ export const useGameState = () => {
                 useMagistradoMode: prev.settings.protocolMagistrado,
                 useSifonMode: prev.settings.useSifonMode,  // ← ADDED
                 usePrismaMode: prev.settings.usePrismaMode,
+                usePrismaLiteMode: prev.settings.usePrismaLiteMode,
                 selectedCats: prev.settings.selectedCategories,
                 history: prev.history,
                 debugOverrides: {
@@ -740,11 +743,16 @@ export const useGameState = () => {
         setGameState(prev => {
             if (!prev.prismaData || !currentWordPair) return prev;
 
+            const last3Logs = prev.history.matchLogs.slice(0, 3);
             const { updatedGameData, updatedPrismaData } = applyPrismaDecision(
                 decision,
                 prev.gameData,
                 prev.prismaData,
-                currentWordPair
+                currentWordPair,
+                prev.history.playerStats,
+                prev.startingPlayer,
+                prev.history.paranoiaLevel,
+                last3Logs
             );
 
             // Increment player stats for overload/eclipse count
@@ -761,13 +769,22 @@ export const useGameState = () => {
                 newPlayerStats[key] = vault;
             }
 
+            const newLogs = [...prev.history.matchLogs];
+            if (newLogs.length > 0 && updatedPrismaData.witnessPlayerId) {
+                const witness = updatedGameData.find(p => p.id === updatedPrismaData.witnessPlayerId);
+                if (witness) {
+                    newLogs[0] = { ...newLogs[0], prismaWitness: witness.name };
+                }
+            }
+
             return {
                 ...prev,
                 gameData: updatedGameData,
                 prismaData: updatedPrismaData,
                 history: {
                     ...prev.history,
-                    playerStats: newPlayerStats
+                    playerStats: newPlayerStats,
+                    matchLogs: newLogs
                 }
             };
         });

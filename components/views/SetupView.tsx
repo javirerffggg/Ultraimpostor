@@ -239,7 +239,8 @@ export const SetupView: React.FC<Props> = ({
             case 'renuncia':   onUpdateSettings({ renunciaMode: !gameState.settings.renunciaMode }); break;
             case 'magistrado': onUpdateSettings({ protocolMagistrado: !gameState.settings.protocolMagistrado }); break;
             case 'sifon':      onUpdateSettings({ useSifonMode: !gameState.settings.useSifonMode }); break;
-            case 'prisma':     onUpdateSettings({ usePrismaMode: !gameState.settings.usePrismaMode }); break;
+            case 'prisma':     onUpdateSettings({ usePrismaMode: !gameState.settings.usePrismaMode, usePrismaLiteMode: false }); break;
+            case 'prismaLite': onUpdateSettings({ usePrismaLiteMode: !gameState.settings.usePrismaLiteMode, usePrismaMode: false }); break;
             case 'memory': {
                 const config = gameState.settings.memoryModeConfig;
                 if (!config.enabled) {
@@ -263,6 +264,7 @@ export const SetupView: React.FC<Props> = ({
         { id: 'renuncia',   name: 'Renuncia',   description: 'Rechazar rol impostor.',        icon: <UserMinus size={20} />,   isActive: gameState.settings.renunciaMode, isDisabled: gameState.impostorCount < 2 },
         { id: 'sifon',      name: 'Sifón',      description: 'Dilema del prisionero.',        icon: <Pipette size={20} />,     isActive: gameState.settings.useSifonMode, isDisabled: gameState.impostorCount < 2 },
         { id: 'prisma',     name: 'Prisma',     description: 'Infiltrado Solitario.',         icon: <Sparkles size={20} />,    isActive: gameState.settings.usePrismaMode, isDisabled: gameState.impostorCount !== 1 },
+        { id: 'prismaLite', name: 'Prisma Lite',description: 'Infiltrado (1 filtración).',    icon: <Sparkles size={20} />,    isActive: gameState.settings.usePrismaLiteMode, isDisabled: gameState.impostorCount !== 1 },
         { id: 'nexus',      name: 'Nexus',      description: 'Impostores aliados.',           icon: <Network size={20} />,     isActive: gameState.settings.nexusMode },
         { id: 'oracle',     name: 'Oráculo',    description: 'Pista pública inicial.',        icon: <Eye size={20} />,         isActive: gameState.settings.oracleMode && gameState.settings.hintMode, isDisabled: !gameState.settings.hintMode },
         { id: 'vanguardia', name: 'Vanguardia', description: 'Ventaja al inicio.',            icon: <Zap size={20} />,         isActive: gameState.settings.vanguardiaMode && gameState.settings.hintMode, isDisabled: !gameState.settings.hintMode },
@@ -636,7 +638,7 @@ export const SetupView: React.FC<Props> = ({
                                     const isMagistrado = mode.id === 'magistrado';
                                     const isRenuncia = mode.id === 'renuncia';
                                     const isSifon = mode.id === 'sifon';
-                                    const isPrisma = mode.id === 'prisma';
+                                    const isPrisma = mode.id === 'prisma' || mode.id === 'prismaLite';
                                     
                                     return (
                                         <div 
