@@ -266,6 +266,7 @@ export interface GameState {
         lastRoundDurations?: number[];
         lastSetupDuration?: number;
         consecutiveNormalRounds?: number;
+        usedTrollHints?: string[];
     };
     settings: {
         hintMode: boolean;

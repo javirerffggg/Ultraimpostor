@@ -234,10 +234,23 @@ export const generateGameData = (config: GameConfig): {
             return Math.random() > 0.5 ? `PISTA: ${catName}` : `PISTA: ${generateSmartHint(pairToUse)}`;
         };
 
+        let localUsedTrollHints = history.usedTrollHints ? [...history.usedTrollHints] : [];
+
         const getTrollHint = (fallback: string) => {
             if (!useHintMode) return "ERES EL IMPOSTOR";
             if (TROLL_HINTS && TROLL_HINTS.length > 0) {
-                return `PISTA: ${TROLL_HINTS[Math.floor(Math.random() * TROLL_HINTS.length)]}`;
+                const availableHints = TROLL_HINTS.filter(h => !localUsedTrollHints.includes(h));
+                let pool = availableHints;
+                
+                if (pool.length === 0) {
+                    localUsedTrollHints = [];
+                    pool = TROLL_HINTS;
+                }
+                
+                const selectedHint = pool[Math.floor(Math.random() * pool.length)];
+                localUsedTrollHints.push(selectedHint);
+                
+                return `PISTA: ${selectedHint}`;
             }
             return fallback;
         };
@@ -314,6 +327,7 @@ export const generateGameData = (config: GameConfig): {
                 paranoiaLevel: 0,
                 coolingDownRounds: 2,
                 lastBreakProtocol: breakProtocolType || 'manual',
+                usedTrollHints: localUsedTrollHints,
                 matchLogs: updatedLogs
             },
             wordPair: trollBasePair
@@ -893,7 +907,8 @@ export const generateGameData = (config: GameConfig): {
             lastLeteoRound: breakProtocolType === 'leteo' ? currentRound : workingHistory.lastLeteoRound,
             rotationIndex: workingHistory.rotationIndex,
             temporaryBlacklist: newTemporaryBlacklist,
-            explorerDeck: workingHistory.explorerDeck
+            explorerDeck: workingHistory.explorerDeck,
+            usedTrollHints: workingHistory.usedTrollHints
         },
         wordPair
     };
