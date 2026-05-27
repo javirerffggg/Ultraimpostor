@@ -921,7 +921,7 @@ export const SetupView: React.FC<Props> = ({
                                         {tab.icon}
                                     </div>
                                     <span 
-                                        className="text-[8px] font-black uppercase mt-1 tracking-wider whitespace-nowrap transition-all duration-500"
+                                        className="text-[8px] font-black uppercase mt-1 tracking-normal truncate w-full text-center px-0.5 transition-all duration-500"
                                         style={{ 
                                             opacity: isCompactUI ? 0 : 1, 
                                             maxHeight: isCompactUI ? 0 : '20px',
