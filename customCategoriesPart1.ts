@@ -106,7 +106,7 @@ export const CUSTOM_CATEGORIES_PART_1: Record<string, CategoryData[]> = {
         { civ: "Micrófono", imp: "Megáfono", hints: ["Voz", "Sonido", "Hablar"] },
         { civ: "Auriculares", imp: "Cascos", hints: ["Oído", "Escuchar", "Música"] },
     ],
-    "Personas famosas": [
+    "Personas famosas y marcas": [
         { civ: "Picasso", imp: "Dalí", hints: ["Pintor", "España", "Arte"] },
         { civ: "Messi", imp: "Cristiano", hints: ["Fútbol", "Balón", "Gol"] },
         { civ: "Nadal", imp: "Federer", hints: ["Tenis", "Raqueta", "Deporte"] },
